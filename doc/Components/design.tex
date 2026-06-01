@@ -130,7 +130,7 @@ La actualización STDP después de cada autenticación exitosa asegura que la PU
     \caption{Esquema completo de la base de datos \texttt{crypto\_puf}}
     \label{tab:db-schema}
     \footnotesize\setlength{\tabcolsep}{3pt}
-    \begin{tabular}{|p{2cm}|p{2.2cm}|p{1.2cm}|p{2.5cm}|}
+    \resizebox{\columnwidth}{!}{\begin{tabular}{|p{2cm}|p{2.2cm}|p{1.2cm}|p{2.5cm}|}
         \hline
         \textbf{Tabla} & \textbf{Columna} & \textbf{Tipo} & \textbf{Descripción} \\
         \hline
@@ -149,7 +149,7 @@ La actualización STDP después de cada autenticación exitosa asegura que la PU
         & challenge\_length & INTEGER & n = 64 \\
         & registered\_at & TIMESTAMPTZ & Registro \\
         \hline
-    \end{tabular}
+    \end{tabular}}
 \end{table}
 
 \textbf{4) Módulo de Cifrado (Cuatro Capas Modernas):} El algoritmo central de cifrado se describe formalmente a continuación.

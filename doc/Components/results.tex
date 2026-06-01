@@ -10,7 +10,7 @@ Se diseñaron e implementaron seis pruebas funcionales para validar el esquema d
     \centering\footnotesize\setlength{\tabcolsep}{3pt}
     \caption{CRP generados por la PUF Neuromórfica}
     \label{tab:crp-neuro}
-    \begin{tabular}{|c|c|c|c|}
+    \resizebox{\columnwidth}{!}{\begin{tabular}{|c|c|c|c|}
         \hline
         \textbf{CRP \#} & \textbf{Reto (8 bits)} & $\mathbf{R_{\text{limpia}}}$ & $\mathbf{R_{\text{ruidosa}}}$ \\
         \hline
@@ -25,7 +25,7 @@ Se diseñaron e implementaron seis pruebas funcionales para validar el esquema d
         9 & $[1, -1, -1, -1, -1, -1, 1, 1]$ & -1 & -1 \\
         10 & $[1, 1, -1, 1, 1, 1, 1, 1]$ & +1 & -1 \\
         \hline
-    \end{tabular}
+    \end{tabular}}
 \end{table}
 
 \textbf{Resultado:} La generación de CRP fue exitosa en el 100\% de los casos. La tasa de bit flip inducida por ruido fue del 30\% (3 de 10 respuestas cambiaron), consistente con el nivel de ruido configurado. La distribución de respuestas (60\% positivas) se mantuvo similar a la PUF Arbiter clásica, validando que la arquitectura neuromórfica preserva las propiedades estadísticas fundamentales de una PUF.
@@ -71,7 +71,7 @@ Se diseñaron e implementaron seis pruebas funcionales para validar el esquema d
     \centering\footnotesize\setlength{\tabcolsep}{3pt}
     \caption{Parámetros de cifrado multicapa}
     \label{tab:enc-params-neuro}
-    \begin{tabular}{|l|l|}
+    \resizebox{\columnwidth}{!}{\begin{tabular}{|l|l|}
         \hline
         \textbf{Parámetro} & \textbf{Valor} \\
         \hline
@@ -87,7 +87,7 @@ Se diseñaron e implementaron seis pruebas funcionales para validar el esquema d
         \hline
         Texto descifrado & Idéntico al original \\
         \hline
-    \end{tabular}
+    \end{tabular}}
 \end{table}
 
 \textbf{Resultado:} 100\% de éxito en cifrado/descifrado sobre 100 iteraciones. La capa de permutación spike añade 0.3 ms adicionales al proceso de cifrado (2.4 ms total), un overhead aceptable.
@@ -102,7 +102,7 @@ Se diseñaron e implementaron seis pruebas funcionales para validar el esquema d
     \centering\footnotesize\setlength{\tabcolsep}{3pt}
     \caption{Telemetría transmitida con cifrado multicapa}
     \label{tab:telemetry-neuro}
-    \begin{tabular}{|l|c|c|c|}
+    \resizebox{\columnwidth}{!}{\begin{tabular}{|l|c|c|c|}
         \hline
         \textbf{Campo} & \textbf{Original} & \textbf{Descifrado} & \textbf{Estado} \\
         \hline
@@ -122,7 +122,7 @@ Se diseñaron e implementaron seis pruebas funcionales para validar el esquema d
         \hline
         G media crossbar & 0.521 & 0.521 & $\checkmark$ \\
         \hline
-    \end{tabular}
+    \end{tabular}}
 \end{table}
 
 \subsection*{E. Prueba 5: Análisis de Entropía y Difusión}
