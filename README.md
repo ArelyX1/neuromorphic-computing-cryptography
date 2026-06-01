@@ -4,6 +4,15 @@ Esquema de cifrado híbrido de cuatro capas con PUF neuromórfica para seguridad
 
 **Pipeline:** PUFKeyDerivation → AES-256-CBC (PKCS7) → AES-256-CTR → Spike Permutation → ChaCha20
 
+
+<img width="1190" height="642" alt="image" src="https://github.com/user-attachments/assets/8b74e218-a088-499d-a6c6-50b8f1ab98f8" />
+<img width="1200" height="639" alt="image" src="https://github.com/user-attachments/assets/f7dc7567-161c-4c45-a174-d83e2d8b5f4d" />
+<img width="1182" height="639" alt="image" src="https://github.com/user-attachments/assets/b98b503c-ce13-4435-a932-693a267e6a7b" />
+<img width="1181" height="629" alt="image" src="https://github.com/user-attachments/assets/6f5039ca-f728-47ce-9f7b-eacef2065b05" />
+<img width="1144" height="600" alt="image" src="https://github.com/user-attachments/assets/89c6933a-7ffc-4d03-89a1-d8ba3488ab7c" />
+
+
+
 ## Requisitos
 
 - Python ≥ 3.12
@@ -90,3 +99,5 @@ crypto-project/
 - La autenticación no requiere PostgreSQL; los CRP se generan bajo demanda. Con DB habilitada, los CRP se almacenan como *helper data*.
 - No editar `.env` si no se usa PostgreSQL — la API funciona sin base de datos.
 - El paper LaTeX compila con `lualatex main.tex && biber main && lualatex main.tex`.
+
+
