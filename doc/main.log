@@ -1,4 +1,4 @@
-This is LuaHBTeX, Version 1.18.0 (TeX Live 2025/dev/Debian)  (format=lualatex 2026.3.19)  1 JUN 2026 03:22
+This is LuaHBTeX, Version 1.18.0 (TeX Live 2025/dev/Debian)  (format=lualatex 2026.3.19)  1 JUN 2026 03:37
  restricted system commands enabled.
 **main.tex
 (./main.tex
@@ -1630,7 +1630,7 @@ Overfull \hbox (10.93472pt too wide) in paragraph at lines 176--185
 
 
 [11]))
-Underfull \hbox (badness 2181) in paragraph at lines 161--161
+Underfull \hbox (badness 2181) in paragraph at lines 159--159
 \TU/lmr/m/it/10.03749 Pro-cee-dings of the IEEE\TU/lmr/m/n/10.03749 , vol. 78, 
 n.[] 10,
  []
@@ -1667,9 +1667,6 @@ L3 programming layer <2025-01-18>
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
 Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 4C3F9B8967E6E8776F6B5EAA604D52C9;593.
 Package logreq Info: Writing requests to 'main.run.xml'.
@@ -1680,14 +1677,14 @@ Package logreq Info: Writing requests to 'main.run.xml'.
 Here is how much of LuaTeX's memory you used:
  33651 strings out of 475512
  596937,1977958 words of node,token memory allocated
- 1108 words of node memory still in use:
-   8 hlist, 2 vlist, 2 rule, 1 local_par, 8 glue, 5 kern, 2 penalty, 3 glyph, 88
- attribute, 105 glue_spec, 46 attribute_list, 1 write, 4 pdf_action nodes
-   avail lists: 1:8,2:10282,3:738,4:713,5:17990,6:267,7:21880,8:64,9:31088,10:23
+ 1120 words of node memory still in use:
+   8 hlist, 2 vlist, 2 rule, 1 local_par, 8 glue, 5 kern, 2 penalty, 3 glyph, 90
+ attribute, 105 glue_spec, 47 attribute_list, 1 write, 5 pdf_action nodes
+   avail lists: 1:8,2:10279,3:738,4:713,5:17990,6:266,7:21880,8:64,9:31088,10:23
 ,11:2328
  55889 multiletter control sequences out of 65536+600000
  122 fonts using 11259591 bytes
- 86i,16n,115p,2088b,1797s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 86i,16n,115p,2088b,1795s stack positions out of 10000i,1000n,20000p,200000b,200000s
 {/usr/share/texmf/fonts/enc/dvips/lm/lm-rm.enc}{/usr/share/texmf/fonts/enc/dvips
 /lm/lm-mathsy.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-mathit.enc}</usr/share
 /texmf/fonts/opentype/public/lm/lmroman6-regular.otf></usr/share/texmf/fonts/ope
@@ -1714,10 +1711,10 @@ hare/texmf/fonts/type1/public/lm/lmsy7.pfb></usr/share/texmf/fonts/type1/public/
 lm/lmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/
 msam10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/ms
 bm10.pfb>
-Output written on main.pdf (12 pages, 347078 bytes).
+Output written on main.pdf (12 pages, 346709 bytes).
 
-PDF statistics: 421 PDF objects out of 1000 (max. 8388607)
- 344 compressed objects within 4 object streams
+PDF statistics: 423 PDF objects out of 1000 (max. 8388607)
+ 346 compressed objects within 4 object streams
  127 named destinations out of 1000 (max. 131072)
  49 words of extra memory for PDF output out of 10000 (max. 100000000)
 
