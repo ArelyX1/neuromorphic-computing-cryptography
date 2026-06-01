@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+node_modules/
+.vite/
+dist/
+*.zip
+*.log
+*.blg
+*.bbl
+*.aux
+*.out
+*.bcf
+*.run.xml
+*.pdf

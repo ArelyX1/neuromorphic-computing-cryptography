@@ -29,13 +29,10 @@ cd frontend
 npm install
 cd ..
 
-# 5. Ejecutar pruebas standalone
-python main.py
-
-# 6. (Opcional) Iniciar servidor Flask
+# 5. (Opcional) Iniciar servidor Flask
 python api/server.py
 
-# 7. (Opcional) En otra terminal, iniciar frontend
+# 6. (Opcional) En otra terminal, iniciar frontend
 cd frontend
 npm run dev
 ```
@@ -65,15 +62,6 @@ npm run dev
 
 Dashboard en `http://localhost:3000`. El proxy de Vite redirige `/api`, `/stream`, `/graphql` al backend.
 
-### 3. Script de prueba standalone
-
-```bash
-source .venv/bin/activate
-python main.py
-```
-
-Ejecuta pruebas de generación CRP, cifrado/descifrado multicapa, autenticación, detección de ataques y vuelo simulado.
-
 ## Estructura
 
 ```
@@ -93,7 +81,6 @@ crypto-project/
 │   ├── custom_cipher.py    # PUFKeyDerivation + 4 capas
 │   └── simulation/         # PUF neuromórfica híbrida
 ├── doc/                    # Paper LaTeX
-├── main.py                 # Pruebas standalone
 ├── setup_db.py             # Inicializar PostgreSQL
 └── requirements.txt
 ```
