@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drone PUF Crypto Console</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="logo">
+      <span class="drone-icon">&#9992;</span>
+      <h1>PCVC Drone Console</h1>
+    </div>
+    <div class="header-status">
+      <span id="auth-badge" class="badge badge-warning">AUTHENTICATING...</span>
+      <span id="crypto-badge" class="badge badge-warning">CRYPTO: PCVC</span>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- Telemetry Panel -->
+    <div class="card" id="telemetry-card">
+      <div class="card-header">
+        <span>&#127760;</span> TELEMETR&Iacute;A EN VIVO
+        <span class="live-dot"></span>
+      </div>
+      <div class="card-body">
+        <div class="telemetry-grid">
+          <div class="t-item">
+            <div class="t-label">DRONE ID</div>
+            <div class="t-value" id="t-drone-id">DRONE-CARGO-42</div>
+          </div>
+          <div class="t-item">
+            <div class="t-label">LATITUD</div>
+            <div class="t-value" id="t-lat">-16.4090</div>
+          </div>
+          <div class="t-item">
+            <div class="t-label">LONGITUD</div>
+            <div class="t-value" id="t-lon">-71.5374</div>
+          </div>
+          <div class="t-item">
+            <div class="t-label">ALTITUD</div>
+            <div class="t-value" id="t-alt">100.0 <span class="unit">m</span></div>
+          </div>
+          <div class="t-item">
+            <div class="t-label">VELOCIDAD</div>
+            <div class="t-value" id="t-speed">15.0 <span class="unit">m/s</span></div>
+          </div>
+          <div class="t-item">
+            <div class="t-label">HEADING</div>
+            <div class="t-value" id="t-heading">0&deg;</div>
+          </div>
+          <div class="t-item">
+            <div class="t-label">BATER&Iacute;A</div>
+            <div class="t-value" id="t-battery">
+              <div class="battery-bar">
+                <div class="battery-fill" id="battery-fill" style="width:100%"></div>
+              </div>
+              <span id="battery-text">100%</span>
+            </div>
+          </div>
+          <div class="t-item">
+            <div class="t-label">SE&Ntilde;AL</div>
+            <div class="t-value" id="t-signal">
+              <div class="signal-bars" id="signal-bars">
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+          <div class="t-item">
+            <div class="t-label">PAQUETES</div>
+            <div class="t-value" id="t-packets">0</div>
+          </div>
+          <div class="t-item">
+            <div class="t-label">ESTADO</div>
+            <div class="t-value" id="t-status">EN RUTA</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PUF Authentication Panel -->
+    <div class="card" id="puf-card">
+      <div class="card-header">
+        <span>&#128274;</span> AUTENTICACI&Oacute;N PUF
+      </div>
+      <div class="card-body">
+        <div class="puf-diagram">
+          <div class="puf-box puf-input">
+            <div class="puf-label">RETO (C)</div>
+            <div id="puf-challenge" class="puf-bits">...</div>
+          </div>
+          <div class="puf-arrow">&rarr;</div>
+          <div class="puf-box puf-core">
+            <div class="puf-label">HybridPUF</div>
+            <div class="puf-sub">Vigen&egrave;re + XOR Arbiter</div>
+          </div>
+          <div class="puf-arrow">&rarr;</div>
+          <div class="puf-box puf-output">
+            <div class="puf-label">RESPUESTA (R)</div>
+            <div id="puf-response" class="puf-bits">...</div>
+          </div>
+        </div>
+        <div class="puf-status">
+          <div class="puf-stat">
+            <span>n (bits):</span> <strong>64</strong>
+          </div>
+          <div class="puf-stat">
+            <span>k (XOR):</span> <strong>4</strong>
+          </div>
+          <div class="puf-stat">
+            <span>Preproc:</span> <strong>Vigen&egrave;re</strong>
+          </div>
+          <div class="puf-stat">
+            <span>Seed:</span> <strong id="puf-seed">777</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Encryption Panel -->
+    <div class="card" id="crypto-card">
+      <div class="card-header">
+        <span>&#128477;</span> CIFRADO PCVC
+      </div>
+      <div class="card-body">
+        <div class="crypto-layers">
+          <div class="layer">
+            <div class="layer-name">Cap 1: Caesar</div>
+            <div class="layer-val" id="c-caesar">Shift: --</div>
+          </div>
+          <div class="layer-arrow">&darr;</div>
+          <div class="layer">
+            <div class="layer-name">Cap 2: Vigen&egrave;re</div>
+            <div class="layer-val" id="c-vigenere">Key: --</div>
+          </div>
+          <div class="layer-arrow">&darr;</div>
+          <div class="layer">
+            <div class="layer-name">Cap 3: ChaCha20</div>
+            <div class="layer-val" id="c-chacha">IV: --</div>
+          </div>
+          <div class="layer-arrow">&darr;</div>
+          <div class="layer layer-result">
+            <div class="layer-name">CIFRADO FINAL</div>
+            <div class="layer-val" id="c-result">---</div>
+          </div>
+        </div>
+        <div id="crypto-size" class="crypto-size"></div>
+      </div>
+    </div>
+
+    <!-- Drone Map Panel -->
+    <div class="card" id="map-card">
+      <div class="card-header">
+        <span>&#128506;</span> MAPA DE VUELO
+      </div>
+      <div class="card-body map-body">
+        <canvas id="map-canvas"></canvas>
+      </div>
+    </div>
+
+    <!-- Encryption Log -->
+    <div class="card" id="log-card">
+      <div class="card-header">
+        <span>&#128196;</span> REGISTRO DE CIFRADO
+      </div>
+      <div class="card-body log-body">
+        <div id="log-entries"></div>
+      </div>
+    </div>
+
+    <!-- Attack Sim Panel -->
+    <div class="card" id="attack-card">
+      <div class="card-header">
+        <span>&#128520;</span> SIMULADOR DE ATAQUE
+      </div>
+      <div class="card-body">
+        <div class="attack-controls">
+          <button class="btn btn-danger" onclick="simulateAttack(111)">Dron Falso (seed 111)</button>
+          <button class="btn btn-danger" onclick="simulateAttack(222)">Dron Falso (seed 222)</button>
+          <button class="btn btn-secondary" onclick="resetDrone()">Reiniciar</button>
+        </div>
+        <div id="attack-result" class="attack-result"></div>
+        <div id="attack-log"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

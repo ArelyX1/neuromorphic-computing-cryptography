@@ -1,0 +1,61 @@
+% Configuración del índice -----------
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsubsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\contentsname}{ÍNDICE DE CONTENIDO\vspace{0.3cm} \\ \rule{\textwidth}{0.4pt} }
+
+
+\tableofcontents
+
+
+\newpage
+%------------------------------------
+% Configuración del índice de figuras-
+\renewcommand{\cftfigleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\listfigurename}{ÍNDICE DE FIGURAS\vspace{0.3cm} \\ \rule{\textwidth}{0.4pt}}
+
+\listoffigures
+
+\newcommand{\apastylefigure}[4]{
+    \begin{figure}[H]
+        \centering
+        \caption{#1} % Caption above the image
+        \label{#2} % Label for referencing
+        \includegraphics[width=1\linewidth]{#3} % Image inclusion
+        \\ \textit{\textbf{Nota. }#4} % Note below the image
+    \end{figure}
+}
+\newpage
+%--------------------------------------
+
+% Configuración del índice de tablas ---
+\renewcommand{\cfttableader}{\cftdotfill{\cftdotsep}} % Adds dotted leaders for List of Tables
+\renewcommand{\listtablename}{ÍNDICE DE TABLAS\vspace{0.3cm} \\ \rule{\textwidth}{0.4pt}}
+\listoftables
+%\begin{center}
+%    \rule{3in}{0.4pt}
+%\end{center}
+\renewcommand{\tablename}{Tabla} % Cambia "Cuadro" por "Tabla"
+\newcommand{\apastyletable}[5]{
+    \begin{table}[H]
+        \centering
+        \renewcommand{\arraystretch}{1.5} % Ajusta la separación vertical dentro de las celdas
+        \caption{#1} % Título de la tabla
+        \label{#2} % Etiqueta para referencias cruzadas
+        \rowcolors{2}{}{gray!10} % Alterna colores para las filas
+        \begin{tabular}{#3} % Configuración de columnas (ejemplo: "|c|c|")
+            #4 % Contenido de la tabla
+        \end{tabular}
+        \\[0.5em] % Espacio entre la tabla y la nota
+        \textit{\textbf{Nota. }#5} % Nota al pie de la tabla
+    \end{table}
+}
+
+\clearpage
+%----------------------------------------
+
+
+
+\renewcommand{\listlistingname}{Lista de Scripts}
+\lstlistoflistings
+\clearpage

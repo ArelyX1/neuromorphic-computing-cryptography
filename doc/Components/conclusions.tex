@@ -1,0 +1,41 @@
+Este trabajo presentó el diseño, implementación y validación de un esquema de cifrado híbrido de cuatro capas (\textbf{AES-256-CBC $\to$ AES-256-CTR $\to$ Spike Permutation $\to$ ChaCha20}) con claves derivadas de una PUF neuromórfica para seguridad en comunicaciones de drones de reparto. A continuación se enumeran las conclusiones más relevantes.
+
+\subsection*{A. Conclusiones Principales}
+
+\textbf{1) Viabilidad del cifrado multicapa con PUF neuromórfica:} Se demostró que la combinación de una PUF basada en memristor crossbar con neuronas LIF, codificación spike y plasticidad STDP, junto con cifrados modernos (AES-256-CBC, AES-256-CTR, ChaCha20) y una capa de permutación neuronaL, produce un sistema de cifrado funcional. El 100\% de las pruebas de cifrado/descifrado completaron exitosamente.
+
+\textbf{2) Evolución dinámica de la función PUF mediante STDP:} Se validó experimentalmente que el mecanismo STDP modifica las conductancias del crossbar tras cada autenticación exitosa. La conductancia media aumentó de 0.500 a 0.535 (+7\%) en 10 autenticaciones, demostrando que la PUF neuromórfica evoluciona con el uso. Esto hace que la función de mapeo CRP sea dependiente del historial, dificultando ataques de modelado.
+
+\textbf{3) Efectividad de la autenticación:} El protocolo detecta drones falsos con probabilidad esencialmente unitaria con respuestas de 64 bits ($p = 1 - 5.4 \times 10^{-20}$). La PUF neuromórfica mostró una tasa de detección del 80\% en pruebas de 10 ejecuciones con respuesta de 1 bit, superior al 70\% de la PUF Arbiter clásica.
+
+\textbf{4) Rendimiento adecuado para tiempo real:} Con 2.4 ms por paquete cifrado, el sistema es compatible con frecuencias de telemetría de 1-10 Hz. La sobrecarga de 48 bytes (tres vectores de inicialización de 16 bytes) por paquete es aceptable para enlaces de radio modernos.
+
+\textbf{5) Cuatro capas de defensa en profundidad con estándares NIST:} La incorporación de AES-256 en dos modos (CBC y CTR) proporciona confusión por bloques y cifrado de flujo, mientras que la capa de permutación spike añade difusión no lineal vinculada al estado interno del crossbar memristivo, y ChaCha20 sella el mensaje con un cifrado estándar NIST.
+
+\subsection*{B. Contribuciones Originales}
+
+\begin{enumerate}
+    \item \textbf{Esquema de cifrado multicapa:} Un algoritmo propio de cuatro capas que integra PUF neuromórfica, AES-256-CBC, AES-256-CTR, permutación spike y ChaCha20, con claves independientes derivadas para cada capa mediante \texttt{PUFKeyDerivation}.
+    \item \textbf{PUF Neuromórfica con crossbar memristivo y STDP:} Una simulación de PUF basada en memristores que incorpora plasticidad sináptica dependiente de disparos para evolución dinámica de la función de autenticación.
+    \item \textbf{Codificación spike de retos:} Un mecanismo de rate coding que transforma retos binarios en tasas de disparo neuronal, introduciendo estocasticidad controlada.
+    \item \textbf{Protocolo de autenticación con evolución STDP:} Un protocolo que actualiza las conductancias del crossbar tras cada autenticación exitosa, limitando la ventana de observación del atacante.
+    \item \textbf{Dashboard con visualización neuromórfica:} Interfaz web en tiempo real que muestra las conductancias del crossbar, niveles de activación spike, y estado de las neuronas LIF durante la operación.
+\end{enumerate}
+
+\subsection*{C. Análisis Comparativo con la Literatura}
+
+Los resultados obtenidos se comparan favorablemente con trabajos previos en autenticación hardware para drones. Mientras que Rauh \cite{rauh2020drone} reporta esquemas basados en certificados PKI con overhead computacional de 50-200 ms por autenticación, el esquema propuesto logra 2.4 ms con seguridad equivalente o superior. La Tabla~\ref{tab:comparison} muestra que, además del rendimiento superior, este esquema es el único que ofrece evolución dinámica de la función de autenticación y claves independientes por capa criptográfica.
+
+La incorporación de la capa de permutación spike, basada en la codificación neuronal del reto, no tiene precedente en la literatura de PUF y cifrado híbrido. Esta capa añade una transformación criptográfica que vincula el estado interno del crossbar memristivo con el proceso de cifrado, cerrando el ciclo entre la identidad hardware y la protección de datos.
+
+\subsection*{D. Recomendaciones para Implementación en Producción}
+
+Para llevar el prototipo a un sistema de producción real, se recomienda: (1) implementar la PUF neuromórfica en hardware FPGA o ASIC con crossbar memristivo real; (2) trasladar el algoritmo de cifrado multicapa a C/Rust para ejecución nativa en MCU; (3) incorporar mecanismos de homeostasis sináptica para estabilizar las conductancias a largo plazo; (4) implementar códigos correctores de errores (BCH, Reed-Solomon) para mitigar ruido ambiental; (5) utilizar protocolo de transporte con rate limiting contra ataques DoS.
+
+\subsection*{E. Reflexión Final}
+
+La integración de computación neuromórfica con criptografía basada en PUF abre una nueva dirección en seguridad hardware. Mientras que los sistemas tradicionales almacenan claves estáticas vulnerables a extracción, la PUF neuromórfica genera claves que emergen de la física del dispositivo y evolucionan con el uso, ofreciendo un nivel de seguridad que se aproxima al ideal de la inforjabilidad física.
+
+La metáfora es poderosa: así como el cerebro biológico aprende y se adapta, la PUF neuromórfica madura con cada autenticación, volviéndose más difícil de modelar con el tiempo. Este trabajo demuestra que esta visión es técnicamente alcanzable y sienta las bases para una nueva generación de sistemas criptográficos bio-inspirados para la seguridad de sistemas autónomos.
+
+El código fuente completo del proyecto está disponible en el repositorio \url{https://github.com/arelyxl/neuromorphic-computing-cryptography}, e incluye la simulación de la PUF neuromórfica, el cifrador multicapa (AES-CBC + AES-CTR + Spike + ChaCha20), la simulación de telemetría de drones, y el dashboard React con visualización en tiempo real.

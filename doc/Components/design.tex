@@ -1,0 +1,297 @@
+La metodología adoptada sigue un enfoque de investigación aplicada con componente experimental. Se diseñó un algoritmo criptográfico propio de cuatro capas (AES-256-CBC $\to$ AES-256-CTR $\to$ Spike Permutation $\to$ ChaCha20), se implementó un prototipo funcional en Python 3.13, y se evaluó mediante simulación de un escenario de drone de reparto con telemetría cifrada y PUF neuromórfica.
+
+\subsection*{A. PUF Neuromórfica con Memristor Crossbar y STDP}
+
+El núcleo del sistema es una PUF neuromórfica que simula un crossbar de memristores acoplado a neuronas LIF (Leaky Integrate-and-Fire). A diferencia de las PUF Arbiter tradicionales que modelan diferencias de retardo, la PUF neuromórfica explota la variabilidad física de las conductancias memristivas como fuente de entropía y la plasticidad STDP como mecanismo de evolución dinámica.
+
+\subsubsection*{A.1 Codificación Spike del Reto}
+
+Cada reto $C \in \{-1,1\}^n$ se transforma en una secuencia de tasas de disparo mediante codificación por tasa (rate coding):
+
+\begin{equation}
+    \rho_i = \frac{C_i + 1}{2} \in [0, 1]
+    \label{eq:rate}
+\end{equation}
+
+donde $\rho_i$ representa la probabilidad de que la $i$-ésima neurona presináptica genere un disparo (spike) en una ventana temporal. A partir de estas tasas, se genera un vector de spikes $S \in \{0,1\}^n$ muestreando:
+
+\begin{equation}
+    S_i = \begin{cases} 1 & \text{si } U(0,1) < \rho_i \\ 0 & \text{en caso contrario} \end{cases}
+    \label{eq:spike_gen}
+\end{equation}
+
+Este proceso introduce una capa de estocasticidad controlada que hace que la misma entrada pueda producir diferentes representaciones internas, añadiendo entropía al sistema.
+
+\subsubsection*{A.2 Crossbar Memristivo}
+
+El crossbar memristivo se modela como una matriz de conductancias $G \in \mathbb{R}^{k \times n}$ donde $k$ es el número de neuronas postsinápticas y $n$ el número de entradas presinápticas. Cada conductancia $G_{j,i}$ representa la fuerza sináptica entre la $i$-ésima entrada y la $j$-ésima neurona. Inicialmente, las conductancias se generan como:
+
+\begin{equation}
+    G_{j,i} = |\mathcal{N}(\mu=0.5, \sigma=0.15)|
+    \label{eq:cond_init}
+\end{equation}
+
+acotadas al rango $[0.01, 1.0]$. Las variaciones en los valores iniciales simulan las imperfecciones del proceso de fabricación de memristores reales, que producen conductancias iniciales únicas en cada dispositivo \cite{rajan2020memristor}.
+
+La corriente de entrada a cada neurona postsináptica se calcula como el producto del vector de spikes por las conductancias:
+
+\begin{equation}
+    I_j = \sum_{i=1}^{n} G_{j,i} \cdot S_i + b_j
+    \label{eq:current}
+\end{equation}
+
+donde $b_j \sim \mathcal{N}(0, 0.5)$ es un sesgo que modela corrientes de fuga.
+
+\subsubsection*{A.3 Neurona LIF (Leaky Integrate-and-Fire)}
+
+Cada neurona postsináptica se modela mediante la dinámica LIF, que describe la evolución del potencial de membrana $V_m(t)$:
+
+\begin{equation}
+    \tau_m \frac{dV_m}{dt} = -V_m(t) + R_m \cdot I(t)
+    \label{eq:lif}
+\end{equation}
+
+En su formulación discreta para simulación:
+
+\begin{equation}
+    V_m[t+1] = \lambda \cdot V_m[t] + I[t]
+    \label{eq:lif_discrete}
+\end{equation}
+
+donde $\lambda \in (0,1)$ es el factor de fuga (leak). Cuando $V_m$ supera un umbral $\theta$, la neurona genera un disparo y el potencial se reinicia a $V_{reset}$:
+
+\begin{equation}
+    \text{spike}[t] = \begin{cases} 1 & \text{si } V_m[t] \geq \theta \\ 0 & \text{en caso contrario} \end{cases}, \quad V_m[t+1] = V_{reset} \text{ si spike}[t] = 1
+    \label{eq:lif_spike}
+\end{equation}
+
+En esta implementación, se utiliza una ventana temporal de $T = 10$ pasos de simulación. La respuesta final de la PUF se determina por el producto de los potenciales de membrana residuales de todas las neuronas al final de la ventana:
+
+\begin{equation}
+    R = \text{sgn}\left( \prod_{j=1}^{k} V_{m,j}[T] \right)
+    \label{eq:puf_response_neuro}
+\end{equation}
+
+\subsubsection*{A.4 Plasticidad STDP}
+
+El mecanismo STDP actualiza las conductancias en función de la correlación temporal entre disparos pre y postsinápticos. La implementación sigue el modelo simplificado:
+
+\begin{equation}
+    \Delta G_{j,i} = \begin{cases}
+        \eta \cdot (G_{max} - G_{j,i}) & \text{si } S_i = 1 \text{ y spike}_j = 1 \\
+        -\eta \cdot G_{j,i} & \text{si } S_i = 1 \text{ y spike}_j = 0 \\
+        0 & \text{en caso contrario}
+    \end{cases}
+    \label{eq:stdp}
+\end{equation}
+
+donde $\eta = 0.005$ es la tasa de aprendizaje. Este mecanismo se activa selectivamente al final de cada autenticación exitosa, haciendo que la función de mapeo CRP evolucione con el uso. Formalmente, la PUF neuromórfica se define como una función dependiente del tiempo:
+
+\begin{equation}
+    R^{(t)} = \text{PUF}_{\text{neuro}}\left(C, G^{(t)}\right), \quad G^{(t+1)} = G^{(t)} + \text{STDP}\left(S, \text{spike}, \eta\right)
+    \label{eq:evolving_puf}
+\end{equation}
+
+Esta evolución temporal implica que la misma entrada $C$ produce diferentes respuestas $R$ en diferentes momentos, dificultando dramáticamente cualquier intento de modelado por parte de un atacante.
+
+\subsection*{B. Arquitectura General del Sistema}
+
+El sistema completo consta de cuatro componentes principales que interactúan en cascada:
+
+\textbf{1) NeuromorphicHybridPUF (Capa de Identidad Hardware-Evolutiva):} Es el núcleo neuromórfico del sistema descrito en la sección anterior. Incorpora preprocesamiento de retos mediante codificación spike, crossbar memristivo de $k \times n$ conductancias, $k$ neuronas LIF, y actualización STDP post-autenticación.
+
+\textbf{2) Sistema de Autenticación por CRP:} El protocolo de autenticación mutua sigue los pasos del Algoritmo 1.
+
+\begin{lstlisting}[language=Python, caption=Protocolo de autenticacion PUF neuromorfica, label=alg:auth]
+# Autenticacion: Dron -> Base
+def authenticate(drone_puf, drone_id):
+    C = generate_random_challenge(n=64)
+    R_dron = drone_puf.eval(C, noisy=True)
+    # Envia {drone_id, C, R_dron} a la base
+
+# Verificacion: Base recibe y verifica
+def verify(drone_id, C, R_dron):
+    R_esp = db_lookup(drone_id, C)
+    if R_dron == R_esp:
+        session = create_session(drone_id, C)
+        drone_puf.enable_learning(True)
+        drone_puf.eval(C, noisy=False)  # STDP update
+        return AUTH_OK, session.key
+    else:
+        return AUTH_DENIED
+\end{lstlisting}
+
+La actualización STDP después de cada autenticación exitosa asegura que la PUF evolucione, limitando el número de observaciones útiles que un atacante puede acumular.
+
+\textbf{3) Base de Datos de Helper Data:} La base de datos PostgreSQL almacena exclusivamente los CRP que ya han sido utilizados, bajo el modelo de \textit{helper data} propuesto por Maes \cite{maes2012puf}. La estructura completa se muestra en la Tabla \ref{tab:db-schema}.
+
+\begin{table}[H]
+    \centering
+    \caption{Esquema completo de la base de datos \texttt{crypto\_puf}}
+    \label{tab:db-schema}
+    \footnotesize\setlength{\tabcolsep}{3pt}
+    \begin{tabular}{|p{2cm}|p{2.2cm}|p{1.2cm}|p{2.5cm}|}
+        \hline
+        \textbf{Tabla} & \textbf{Columna} & \textbf{Tipo} & \textbf{Descripción} \\
+        \hline
+        \multirow{6}{*}{crp\_records}
+        & id & UUID & PK único \\
+        & challenge & TEXT & Reto (JSON de 64 bits) \\
+        & response & TEXT & Respuesta esperada \\
+        & drone\_id & VARCHAR(64) & FK al dron \\
+        & used & BOOLEAN & CRP ya consumido \\
+        & created\_at & TIMESTAMPTZ & Marca de creación \\
+        \hline
+        \multirow{5}{*}{drone\_identities}
+        & id & UUID & PK único \\
+        & drone\_id & VARCHAR(64) & Identificador único \\
+        & puf\_seed & INTEGER & Semilla de PUF \\
+        & challenge\_length & INTEGER & n = 64 \\
+        & registered\_at & TIMESTAMPTZ & Registro \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\textbf{4) Módulo de Cifrado (Cuatro Capas Modernas):} El algoritmo central de cifrado se describe formalmente a continuación.
+
+\subsection*{C. Algoritmo de Cifrado AES-CBC + AES-CTR + Spike + ChaCha20}
+
+\subsubsection*{C.1 Derivación de Claves Neuromórficas}
+
+La seguridad del sistema descansa en la derivación de claves desde la PUF neuromórfica. Dado un reto $C \in \{-1,1\}^{n}$, el módulo \texttt{PUFKeyDerivation} genera claves independientes para cada capa mediante una función de derivación con sal:
+
+\begin{equation}
+    K_{\text{layer}} = \text{SHA-256}\left( \text{PUF}_{\text{bits}}(C, 256) \parallel \text{``Layer-Name''} \right)[:32]
+    \label{eq:key_derivation}
+\end{equation}
+
+donde $\text{PUF}_{\text{bits}}(C, 256)$ genera 256 bits de material PUF crudo evaluando el reto $C$ en $m = \lceil 256/n \rceil$ iteraciones con niveles de ruido progresivos, y concatenando las respuestas de $n$ bits cada una. La inclusión del nombre de la capa como sal (\texttt{``AES-CBC''}, \texttt{``AES-CTR''}, \texttt{``ChaCha20-Final''}) garantiza que cada clave sea criptográficamente independiente, incluso si se derivan del mismo reto base.
+
+\subsubsection*{C.2 Proceso de Cifrado (Cuatro Capas)}
+
+El proceso de cifrado se muestra en el Algoritmo 2:
+
+\begin{lstlisting}[language=Python, caption=Algoritmo de cifrado con AES-CBC + AES-CTR + Spike + ChaCha20, label=alg:encrypt]
+def encrypt(plaintext, challenge):
+    # Etapa 1: AES-256-CBC con relleno PKCS7
+    key_cbc = derive_key(challenge, 32, "AES-CBC")
+    iv_cbc = os.urandom(16)
+    padder = PKCS7(128).padder()
+    padded = padder.update(plaintext) + padder.finalize()
+    cipher_cbc = Cipher(AES(key_cbc), CBC(iv_cbc))
+    layer1 = cipher_cbc.encrypt(padded)
+
+    # Etapa 2: AES-256-CTR (cifrado de flujo)
+    key_ctr = derive_key(challenge, 32, "AES-CTR")
+    nonce_ctr = os.urandom(16)
+    cipher_ctr = Cipher(AES(key_ctr), CTR(nonce_ctr))
+    layer2 = cipher_ctr.encrypt(layer1)
+
+    # Etapa 3: Permutacion Spike (difusion no lineal)
+    pattern = ((challenge + 1) // 2).astype(uint8)
+    layer3 = bytearray()
+    for i, byte in enumerate(layer2):
+        if pattern[i % len(pattern)]:
+            layer3.append(((byte << 1) | (byte >> 7)) & 0xFF)
+        else:
+            layer3.append(((byte >> 1) | (byte << 7)) & 0xFF)
+
+    # Etapa 4: ChaCha20 (cifrado de flujo final)
+    key_chacha = derive_key(challenge, 32, "ChaCha20-Final")
+    chacha_iv = os.urandom(16)
+    cipher_chacha = Cipher(ChaCha20(key_chacha, chacha_iv), mode=None)
+    ciphertext = cipher_chacha.encrypt(layer3)
+
+    return EncryptedPayload(
+        ciphertext, iv_cbc, nonce_ctr, chacha_iv, challenge
+    )
+\end{lstlisting}
+
+\subsubsection*{C.3 Proceso de Descifrado}
+
+El descifrado invierte exactamente las operaciones en orden inverso:
+
+\begin{equation}
+    \text{plaintext} = \text{AES-CBC}^{-1}\left( \text{AES-CTR}^{-1}\left( \text{Spike}^{-1}\left( \text{ChaCha20}^{-1}(\text{ciphertext}) \right) \right) \right)
+    \label{eq:decrypt_order}
+\end{equation}
+
+La permutación spike se invierte aplicando la rotación opuesta (izquierda $\leftrightarrow$ derecha) según el mismo patrón de disparos. Ambas variantes de AES requieren el IV/nonce y la clave derivada de la misma semilla PUF.
+
+\subsection*{D. Simulación de Vuelo y Telemetría}
+
+Para validar el sistema en un escenario realista, se implementó una simulación de vuelo que genera paquetes de telemetría en cada punto de ruta. Cada paquete contiene coordenadas GPS con deriva sinusoidal: $\text{lat}(t) = -16.4090 + \sin(0.01t) \times 0.001$, $\text{lon}(t) = -71.5374 + \cos(0.01t) \times 0.001$; altitud comenzando en 100 m con incremento de 0.5 m por paso; velocidad de 15 m/s con modulación sinusoidal; batería con decremento lineal del 0.5\% por paso; y heading incrementándose 10° por paso.
+
+\subsection*{E. Detección de Ataques de Suplantación}
+
+El mecanismo de detección explota la propiedad fundamental de inforjabilidad de las PUF neuromórficas. Cuando un atacante intenta suplantar a un dron legítimo, se enfrenta a tres barreras:
+
+\begin{enumerate}
+    \item \textbf{Barrea Física:} Sin acceso al hardware PUF neuromórfico original, no puede generar la respuesta $R$ correcta. Las conductancias memristivas únicas son irreproducibles.
+    \item \textbf{Barrea Evolutiva:} La actualización STDP tras cada autenticación cambia la función de mapeo CRP. Incluso si un atacante observa un CRP en tiempo $t$, ese CRP ya no es válido en tiempo $t+1$.
+    \item \textbf{Barrea Criptográfica:} La codificación spike y la permutación neuronal añaden capas de confusión que requieren conocer el estado interno del crossbar.
+\end{enumerate}
+
+\subsection*{F. Modelo de Seguridad y Supuestos}
+
+El modelo de seguridad asume un atacante con capacidad Dolev-Yao (interceptar, modificar, eliminar y reinyectar mensajes) que conoce el diseño del algoritmo de cifrado (principio de Kerckhoffs), pero no tiene acceso físico al hardware PUF neuromórfico del dron legítimo ni puede predecir los valores de las conductancias internas $G_{j,i}$. La base de datos de CRP se considera segura.
+
+\subsection*{G. Consideraciones de Implementación}
+
+La implementación en Python utiliza: \texttt{numpy 2.4.6} para manipulación de arrays y operaciones matriciales del crossbar; \texttt{cryptography 48.0.0} para el cifrado ChaCha20; \texttt{sqlalchemy 2.0.50} + \texttt{asyncpg 0.31.0} como ORM asíncrono; y \texttt{hashlib} para SHA-256. La simulación de vuelo opera a 1 Hz (un paquete de telemetría por segundo). El dashboard web consume un stream SSE con visualización en tiempo real de las conductancias del crossbar, los niveles de activación spike, y el estado de las neuronas LIF.
+
+\subsection*{H. Análisis de Seguridad Formal}
+
+\subsubsection*{H.1 Robustez Frente a Ataques de Modelado}
+
+La seguridad de una PUF Arbiter frente a ataques de modelado se cuantifica mediante la entropía efectiva del espacio de CRP. Para una PUF de $k$ cadenas XOR con $n$ etapas, el número de combinaciones de retardos distintas es $2^{n}$, pero el modelado mediante regresión logística puede reducir la incertidumbre a aproximadamente $O(n^k)$ parámetros \cite{suh2007puf}.
+
+En la PUF neuromórfica propuesta, la inclusión de: (1) codificación spike estocástica, (2) valores continuos de conductancia en el crossbar, y (3) evolución temporal mediante STDP, incrementa significativamente la complejidad de modelado. El espacio de estados efectivo del crossbar es:
+
+\begin{equation}
+    |\mathcal{G}| = \prod_{j=1}^{k} \prod_{i=1}^{n} \left( \frac{G_{max} - G_{min}}{\epsilon} \right) = \left( \frac{0.99}{0.01} \right)^{k \cdot n} = 99^{256}
+    \label{eq:state_space}
+\end{equation}
+
+para los parámetros $k=4$, $n=64$, asumiendo una resolución de discretización $\epsilon = 0.01$. Este espacio de estados es astronómicamente mayor que el de una PUF binaria equivalente ($2^{64}$ estados de reto), haciendo que los ataques de modelado por fuerza bruta o regresión logística sean computacionalmente inviables.
+
+\subsubsection*{H.2 Resistencia a Ataques de Canal Lateral}
+
+La arquitectura neuromórfica ofrece resistencia natural a ataques de canal lateral por dos mecanismos: (1) la codificación spike introduce variabilidad temporal en el consumo energético, dificultando la correlación entre consumo y operación; (2) las conductancias memristivas evolucionan continuamente, por lo que incluso si un atacante midiera el consumo durante una autenticación, la información obtenida no sería aplicable a autenticaciones futuras.
+
+\subsubsection*{H.3 Análisis de Probabilidad de Colisión}
+
+La probabilidad de que dos PUFs neuromórficas diferentes generen la misma respuesta para el mismo reto (colisión) está acotada por:
+
+\begin{equation}
+    P_{\text{colisión}} \leq \left( \frac{1}{2} \right)^{m} \cdot \left( 1 + \frac{\sigma_{\text{STDP}}}{\sqrt{N_{\text{auth}}}} \right)
+    \label{eq:collision}
+\end{equation}
+
+donde $m$ es la longitud de la respuesta en bits, $\sigma_{\text{STDP}}$ es la desviación introducida por el STDP, y $N_{\text{auth}}$ es el número de autenticaciones previas. Para $m=64$, $P_{\text{colisión}} < 10^{-19}$, y este valor decrece con cada autenticación adicional debido a la divergencia inducida por el STDP.
+
+\subsubsection*{H.4 Ventana Temporal de Ataque y Obsolescencia de CRP}
+
+Un aspecto crítico de la seguridad del sistema es la ventana temporal durante la cual un CRP observado es válido. En la PUF neuromórfica, cada autenticación exitosa activa una actualización STDP que modifica las conductancias del crossbar. Un atacante que intercepta el par $(C_t, R_t)$ en tiempo $t$ no puede utilizarlo para autenticarse en tiempo $t+1$, ya que $G^{(t+1)} \neq G^{(t)}$ implica que $\text{PUF}_{\text{neuro}}(C_t, G^{(t+1)}) \neq R_t$ con alta probabilidad.
+
+Formalmente, la ventana de validez de un CRP observado está acotada por:
+
+\begin{equation}
+    \Delta t_{\text{validez}} \leq \frac{1}{\eta \cdot N_{\text{auth}} \cdot \mathbb{E}[|\Delta G|]}
+    \label{eq:window}
+\end{equation}
+
+donde $\eta$ es la tasa de aprendizaje STDP, $N_{\text{auth}}$ es el número de autenticaciones entre observación e intento de ataque, y $\mathbb{E}[|\Delta G|]$ es el cambio esperado en conductancia por autenticación. Para $\eta = 0.005$ y $N_{\text{auth}} = 1$, el cambio esperado en conductancia es de aproximadamente 0.0035, produciendo una probabilidad de coincidencia de respuesta menor a 0.01 después de una sola autenticación. Esto implica que, a diferencia de las PUF estáticas donde un atacante puede recolectar miles de CRP y construir un modelo offline, en la PUF neuromórfica cada CRP observado deja de ser útil después de la siguiente autenticación exitosa del dron legítimo.
+
+\subsection*{I. Arquitectura Hexagonal del API}
+
+El sistema expone una API REST+GraphQL basada en arquitectura hexagonal (puertos y adaptadores), separando estrictamente la lógica de dominio de los detalles de infraestructura. Las capas se organizan como:
+
+\begin{itemize}
+    \item \textbf{Dominio (domain/):} Define las entidades del negocio (ChallengeResponsePair, DroneIdentity, TelemetryPacket, EncryptedPayload) y los puertos abstractos (PUFPort, CRPRepository, DroneRepository, SessionRepository, TelemetryRepository, AttackRepository) que establecen los contratos de la aplicación sin depender de implementaciones concretas.
+    \item \textbf{Aplicación (application/):} Contiene los casos de uso que orquestan la lógica de negocio: AuthenticateDroneUseCase implementa el protocolo de autenticación CRP con actualización STDP; SendTelemetryUseCase coordina el cifrado, almacenamiento y transmisión de telemetría; SimulateAttackUseCase ejecuta la detección de drones falsos mediante comparación de respuestas PUF.
+    \item \textbf{Infraestructura (infrastructure/):} Implementa los puertos del dominio con tecnologías concretas. El adaptador PUF (puf\_adapter.py) envuelve la simulación NeuromorphicHybridPUF y el cifrador multicapa. Los repositorios (db/repositories.py) implementan el almacenamiento PostgreSQL mediante SQLAlchemy asíncrono. El esquema GraphQL (graphql/schema.py) expone las consultas y mutaciones.
+\end{itemize}
+
+El principio de inversión de dependencias se cumple estrictamente: las capas externas dependen de las internas, nunca al revés. El esquema GraphQL define cuatro consultas (authenticate, droneStatus, telemetryHistory, simulateAttack) y una mutación (sendTelemetry), mientras que los endpoints REST auxiliares (GET /api/status, GET /api/attack/<seed>, GET /api/reset, GET /stream) proporcionan acceso en tiempo real al dashboard web.
+

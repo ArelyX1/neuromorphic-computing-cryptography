@@ -1,0 +1,433 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{none/global//global/global/global}
+    \entry{amazon2022drone}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=bdaa6da10bd73c8516c3e0060ac3c5de}{%
+           family={{Amazon Prime Air}},
+           familyi={A\bibinitperiod}}}%
+      }
+      \strng{namehash}{bdaa6da10bd73c8516c3e0060ac3c5de}
+      \strng{fullhash}{bdaa6da10bd73c8516c3e0060ac3c5de}
+      \strng{fullhashraw}{bdaa6da10bd73c8516c3e0060ac3c5de}
+      \strng{bibnamehash}{bdaa6da10bd73c8516c3e0060ac3c5de}
+      \strng{authorbibnamehash}{bdaa6da10bd73c8516c3e0060ac3c5de}
+      \strng{authornamehash}{bdaa6da10bd73c8516c3e0060ac3c5de}
+      \strng{authorfullhash}{bdaa6da10bd73c8516c3e0060ac3c5de}
+      \strng{authorfullhashraw}{bdaa6da10bd73c8516c3e0060ac3c5de}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Amazon Prime Air: Drone Delivery}
+      \field{urlday}{1}
+      \field{urlmonth}{5}
+      \field{urlyear}{2026}
+      \field{year}{2022}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://www.amazon.com/primeair
+      \endverb
+      \verb{url}
+      \verb https://www.amazon.com/primeair
+      \endverb
+    \endentry
+    \entry{yaacoub2020drone}{inproceedings}{}{}
+      \name{author}{3}{}{%
+        {{hash=20d58465e7b1b7a63cd7b89457718854}{%
+           family={Yaacoub},
+           familyi={Y\bibinitperiod},
+           given={Jean-Paul},
+           giveni={J\bibinithyphendelim P\bibinitperiod}}}%
+        {{hash=f52ef3286a0061750696fef217884d54}{%
+           family={Noura},
+           familyi={N\bibinitperiod},
+           given={Hassan},
+           giveni={H\bibinitperiod}}}%
+        {{hash=081b1379afceeca770566cf8b8121c9e}{%
+           family={Salman},
+           familyi={S\bibinitperiod},
+           given={Ola},
+           giveni={O\bibinitperiod}}}%
+      }
+      \strng{namehash}{48dbf057639e23330dfc7c48d4c12763}
+      \strng{fullhash}{ed3bd741d4dda1de50e2abbaba3fac70}
+      \strng{fullhashraw}{ed3bd741d4dda1de50e2abbaba3fac70}
+      \strng{bibnamehash}{ed3bd741d4dda1de50e2abbaba3fac70}
+      \strng{authorbibnamehash}{ed3bd741d4dda1de50e2abbaba3fac70}
+      \strng{authornamehash}{48dbf057639e23330dfc7c48d4c12763}
+      \strng{authorfullhash}{ed3bd741d4dda1de50e2abbaba3fac70}
+      \strng{authorfullhashraw}{ed3bd741d4dda1de50e2abbaba3fac70}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{2020 IEEE International Conference on Cybersecurity (ICCS)}
+      \field{title}{Security analysis of drones systems: Attacks, limitations, and recommendations}
+      \field{year}{2020}
+      \field{pages}{1\bibrangedash 8}
+      \range{pages}{8}
+      \verb{doi}
+      \verb 10.1109/ICCS51234.2020.00012
+      \endverb
+    \endentry
+    \entry{gassend2002puf}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=951163f52cca4ef8d27621904655eec6}{%
+           family={Gassend},
+           familyi={G\bibinitperiod},
+           given={Blaise},
+           giveni={B\bibinitperiod}}}%
+        {{hash=cd82d13b77fe1f9eacf18f646caded46}{%
+           family={Clarke},
+           familyi={C\bibinitperiod},
+           given={Dwaine},
+           giveni={D\bibinitperiod}}}%
+        {{hash=0962ea061ce9dda1145a03bfa34b30f6}{%
+           family={Van\bibnamedelima Dijk},
+           familyi={V\bibinitperiod\bibinitdelim D\bibinitperiod},
+           given={Marten},
+           giveni={M\bibinitperiod}}}%
+        {{hash=4be4060700fa73556250f6feefb96f46}{%
+           family={Devadas},
+           familyi={D\bibinitperiod},
+           given={Srinivas},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{752e7afdee902683698cee2d87a14d93}
+      \strng{fullhash}{f649fc0685cdd62f35d75e2c8a58bb04}
+      \strng{fullhashraw}{f649fc0685cdd62f35d75e2c8a58bb04}
+      \strng{bibnamehash}{f649fc0685cdd62f35d75e2c8a58bb04}
+      \strng{authorbibnamehash}{f649fc0685cdd62f35d75e2c8a58bb04}
+      \strng{authornamehash}{752e7afdee902683698cee2d87a14d93}
+      \strng{authorfullhash}{f649fc0685cdd62f35d75e2c8a58bb04}
+      \strng{authorfullhashraw}{f649fc0685cdd62f35d75e2c8a58bb04}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Proceedings of the 9th ACM Conference on Computer and Communications Security}
+      \field{title}{Silicon physical random functions}
+      \field{year}{2002}
+      \field{pages}{148\bibrangedash 160}
+      \range{pages}{13}
+      \verb{doi}
+      \verb 10.1145/586110.586132
+      \endverb
+    \endentry
+    \entry{pappu2002puf}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=b86eafe86d64766b03c2e31ddddffbce}{%
+           family={Pappu},
+           familyi={P\bibinitperiod},
+           given={Ravikanth},
+           giveni={R\bibinitperiod}}}%
+        {{hash=ffa081e7e59a2c82fd714ab7ea81fe97}{%
+           family={Recht},
+           familyi={R\bibinitperiod},
+           given={Ben},
+           giveni={B\bibinitperiod}}}%
+        {{hash=58e1923652b1d4faaebafa27ab8dff2f}{%
+           family={Taylor},
+           familyi={T\bibinitperiod},
+           given={Jason},
+           giveni={J\bibinitperiod}}}%
+        {{hash=113a59d98dd032dc5604a9b82a5700b9}{%
+           family={Gershenfeld},
+           familyi={G\bibinitperiod},
+           given={Neil},
+           giveni={N\bibinitperiod}}}%
+      }
+      \strng{namehash}{4de30c0baa8d117b5c75bd6a12f99652}
+      \strng{fullhash}{cd7c61cf1be3095c2057ec402c00c2d7}
+      \strng{fullhashraw}{cd7c61cf1be3095c2057ec402c00c2d7}
+      \strng{bibnamehash}{cd7c61cf1be3095c2057ec402c00c2d7}
+      \strng{authorbibnamehash}{cd7c61cf1be3095c2057ec402c00c2d7}
+      \strng{authornamehash}{4de30c0baa8d117b5c75bd6a12f99652}
+      \strng{authorfullhash}{cd7c61cf1be3095c2057ec402c00c2d7}
+      \strng{authorfullhashraw}{cd7c61cf1be3095c2057ec402c00c2d7}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Science}
+      \field{number}{5589}
+      \field{title}{Physical One-Way Functions}
+      \field{volume}{297}
+      \field{year}{2002}
+      \field{pages}{2026\bibrangedash 2030}
+      \range{pages}{5}
+      \verb{doi}
+      \verb 10.1126/science.1074376
+      \endverb
+    \endentry
+    \entry{mead1990neuromorphic}{article}{}{}
+      \name{author}{1}{}{%
+        {{hash=2dcecb73127612f0a9573e328b85e654}{%
+           family={Mead},
+           familyi={M\bibinitperiod},
+           given={Carver},
+           giveni={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{2dcecb73127612f0a9573e328b85e654}
+      \strng{fullhash}{2dcecb73127612f0a9573e328b85e654}
+      \strng{fullhashraw}{2dcecb73127612f0a9573e328b85e654}
+      \strng{bibnamehash}{2dcecb73127612f0a9573e328b85e654}
+      \strng{authorbibnamehash}{2dcecb73127612f0a9573e328b85e654}
+      \strng{authornamehash}{2dcecb73127612f0a9573e328b85e654}
+      \strng{authorfullhash}{2dcecb73127612f0a9573e328b85e654}
+      \strng{authorfullhashraw}{2dcecb73127612f0a9573e328b85e654}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Proceedings of the IEEE}
+      \field{number}{10}
+      \field{title}{Neuromorphic electronic systems}
+      \field{volume}{78}
+      \field{year}{1990}
+      \field{pages}{1629\bibrangedash 1636}
+      \range{pages}{8}
+      \verb{doi}
+      \verb 10.1109/5.58356
+      \endverb
+    \endentry
+    \entry{strukov2008memristor}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=cc704a0b73ee0b96e949897024f609fd}{%
+           family={Strukov},
+           familyi={S\bibinitperiod},
+           given={Dmitri\bibnamedelima B.},
+           giveni={D\bibinitperiod\bibinitdelim B\bibinitperiod}}}%
+        {{hash=5551023f0d55cc1b9f231916d2ff443e}{%
+           family={Snider},
+           familyi={S\bibinitperiod},
+           given={Gregory\bibnamedelima S.},
+           giveni={G\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+        {{hash=b2cc9a6c635e5a35a9288a07493cb45e}{%
+           family={Stewart},
+           familyi={S\bibinitperiod},
+           given={Duncan\bibnamedelima R.},
+           giveni={D\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
+        {{hash=c30d94799e86116728a7987a8e774ae1}{%
+           family={Williams},
+           familyi={W\bibinitperiod},
+           given={R.\bibnamedelimi Stanley},
+           giveni={R\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+      }
+      \strng{namehash}{862c3b4491701ea00d66eeef07c63def}
+      \strng{fullhash}{173e986d4b678e2a96897c9fa13b81a1}
+      \strng{fullhashraw}{173e986d4b678e2a96897c9fa13b81a1}
+      \strng{bibnamehash}{173e986d4b678e2a96897c9fa13b81a1}
+      \strng{authorbibnamehash}{173e986d4b678e2a96897c9fa13b81a1}
+      \strng{authornamehash}{862c3b4491701ea00d66eeef07c63def}
+      \strng{authorfullhash}{173e986d4b678e2a96897c9fa13b81a1}
+      \strng{authorfullhashraw}{173e986d4b678e2a96897c9fa13b81a1}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Nature}
+      \field{title}{The missing memristor found}
+      \field{volume}{453}
+      \field{year}{2008}
+      \field{pages}{80\bibrangedash 83}
+      \range{pages}{4}
+      \verb{doi}
+      \verb 10.1038/nature06932
+      \endverb
+    \endentry
+    \entry{rajan2020memristor}{article}{}{}
+      \true{moreauthor}
+      \true{morelabelname}
+      \name{author}{2}{}{%
+        {{hash=961abc432a13e38ccb10e3f37f79ab41}{%
+           family={Rajan},
+           familyi={R\bibinitperiod},
+           given={Krishna},
+           giveni={K\bibinitperiod}}}%
+        {{hash=ed5b0e4f855d306688ca9ac20aa252f6}{%
+           family={Adam},
+           familyi={A\bibinitperiod},
+           given={Gina\bibnamedelima C.},
+           giveni={G\bibinitperiod\bibinitdelim C\bibinitperiod}}}%
+      }
+      \strng{namehash}{e43c4c65b8f9efb50c582211b00fb119}
+      \strng{fullhash}{e43c4c65b8f9efb50c582211b00fb119}
+      \strng{fullhashraw}{e43c4c65b8f9efb50c582211b00fb119}
+      \strng{bibnamehash}{e43c4c65b8f9efb50c582211b00fb119}
+      \strng{authorbibnamehash}{e43c4c65b8f9efb50c582211b00fb119}
+      \strng{authornamehash}{e43c4c65b8f9efb50c582211b00fb119}
+      \strng{authorfullhash}{e43c4c65b8f9efb50c582211b00fb119}
+      \strng{authorfullhashraw}{e43c4c65b8f9efb50c582211b00fb119}
+      \field{sortinit}{7}
+      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Transactions on Nanotechnology}
+      \field{title}{Memristor-based Physical Unclonable Functions for Hardware Security}
+      \field{volume}{19}
+      \field{year}{2020}
+      \field{pages}{271\bibrangedash 282}
+      \range{pages}{12}
+      \verb{doi}
+      \verb 10.1109/TNANO.2020.2982801
+      \endverb
+    \endentry
+    \entry{bi1998stdp}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=8a57ec5f1e4994c27e39e9e4b485a448}{%
+           family={Bi},
+           familyi={B\bibinitperiod},
+           given={Guo-qiang},
+           giveni={G\bibinithyphendelim q\bibinitperiod}}}%
+        {{hash=56f7e07f9d80fd4df063bc3a005dfb78}{%
+           family={Poo},
+           familyi={P\bibinitperiod},
+           given={Mu-ming},
+           giveni={M\bibinithyphendelim m\bibinitperiod}}}%
+      }
+      \strng{namehash}{8d9303818d704e1d0af267e985d2f8e3}
+      \strng{fullhash}{8d9303818d704e1d0af267e985d2f8e3}
+      \strng{fullhashraw}{8d9303818d704e1d0af267e985d2f8e3}
+      \strng{bibnamehash}{8d9303818d704e1d0af267e985d2f8e3}
+      \strng{authorbibnamehash}{8d9303818d704e1d0af267e985d2f8e3}
+      \strng{authornamehash}{8d9303818d704e1d0af267e985d2f8e3}
+      \strng{authorfullhash}{8d9303818d704e1d0af267e985d2f8e3}
+      \strng{authorfullhashraw}{8d9303818d704e1d0af267e985d2f8e3}
+      \field{sortinit}{8}
+      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Neuroscience}
+      \field{number}{24}
+      \field{title}{Synaptic Modifications in Cultured Hippocampal Neurons: Dependence on Spike Timing, Synaptic Strength, and Postsynaptic Cell Type}
+      \field{volume}{18}
+      \field{year}{1998}
+      \field{pages}{10464\bibrangedash 10472}
+      \range{pages}{9}
+      \verb{doi}
+      \verb 10.1523/JNEUROSCI.18-24-10464.1998
+      \endverb
+    \endentry
+    \entry{suh2007puf}{inproceedings}{}{}
+      \name{author}{2}{}{%
+        {{hash=e3bf30077ff591f9d7fe4997ac0ecc6c}{%
+           family={Suh},
+           familyi={S\bibinitperiod},
+           given={G.\bibnamedelimi Edward},
+           giveni={G\bibinitperiod\bibinitdelim E\bibinitperiod}}}%
+        {{hash=4be4060700fa73556250f6feefb96f46}{%
+           family={Devadas},
+           familyi={D\bibinitperiod},
+           given={Srinivas},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{9f10c12ce5af26b72b14b3a9c1a34c66}
+      \strng{fullhash}{9f10c12ce5af26b72b14b3a9c1a34c66}
+      \strng{fullhashraw}{9f10c12ce5af26b72b14b3a9c1a34c66}
+      \strng{bibnamehash}{9f10c12ce5af26b72b14b3a9c1a34c66}
+      \strng{authorbibnamehash}{9f10c12ce5af26b72b14b3a9c1a34c66}
+      \strng{authornamehash}{9f10c12ce5af26b72b14b3a9c1a34c66}
+      \strng{authorfullhash}{9f10c12ce5af26b72b14b3a9c1a34c66}
+      \strng{authorfullhashraw}{9f10c12ce5af26b72b14b3a9c1a34c66}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{2007 44th ACM/IEEE Design Automation Conference (DAC)}
+      \field{title}{Physical Unclonable Functions for Device Authentication and Secret Key Generation}
+      \field{year}{2007}
+      \field{pages}{9\bibrangedash 14}
+      \range{pages}{6}
+      \verb{doi}
+      \verb 10.1145/1248480.1248484
+      \endverb
+    \endentry
+    \entry{maes2012puf}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=e5155d0251d24b8107b8bf3664368038}{%
+           family={Maes},
+           familyi={M\bibinitperiod},
+           given={Roel},
+           giveni={R\bibinitperiod}}}%
+        {{hash=bfe0a642d06f77a231ed11d0d3aa70c3}{%
+           family={Verbauwhede},
+           familyi={V\bibinitperiod},
+           given={Ingrid},
+           giveni={I\bibinitperiod}}}%
+      }
+      \strng{namehash}{5fd072e1e0d4035b67868e9fba9b7ea4}
+      \strng{fullhash}{5fd072e1e0d4035b67868e9fba9b7ea4}
+      \strng{fullhashraw}{5fd072e1e0d4035b67868e9fba9b7ea4}
+      \strng{bibnamehash}{5fd072e1e0d4035b67868e9fba9b7ea4}
+      \strng{authorbibnamehash}{5fd072e1e0d4035b67868e9fba9b7ea4}
+      \strng{authornamehash}{5fd072e1e0d4035b67868e9fba9b7ea4}
+      \strng{authorfullhash}{5fd072e1e0d4035b67868e9fba9b7ea4}
+      \strng{authorfullhashraw}{5fd072e1e0d4035b67868e9fba9b7ea4}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Towards Hardware-Intrinsic Security}
+      \field{title}{Physically Unclonable Functions: A Study on the State of the Art and Future Research Directions}
+      \field{year}{2012}
+      \field{pages}{3\bibrangedash 37}
+      \range{pages}{35}
+      \verb{doi}
+      \verb 10.1007/978-3-642-15651-9_1
+      \endverb
+    \endentry
+    \entry{rauh2020drone}{inproceedings}{}{}
+      \true{moreauthor}
+      \true{morelabelname}
+      \name{author}{1}{}{%
+        {{hash=0b3566e376caf790d227fe99472e04e1}{%
+           family={Rauh},
+           familyi={R\bibinitperiod},
+           given={Alexander},
+           giveni={A\bibinitperiod}}}%
+      }
+      \strng{namehash}{c444cdb13ac573f95452360d466e3fa4}
+      \strng{fullhash}{c444cdb13ac573f95452360d466e3fa4}
+      \strng{fullhashraw}{c444cdb13ac573f95452360d466e3fa4}
+      \strng{bibnamehash}{c444cdb13ac573f95452360d466e3fa4}
+      \strng{authorbibnamehash}{c444cdb13ac573f95452360d466e3fa4}
+      \strng{authornamehash}{c444cdb13ac573f95452360d466e3fa4}
+      \strng{authorfullhash}{c444cdb13ac573f95452360d466e3fa4}
+      \strng{authorfullhashraw}{c444cdb13ac573f95452360d466e3fa4}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{2020 International Conference on Cyber Security and Protection of Digital Services (Cyber Security)}
+      \field{title}{Cybersecurity in Drone Delivery Systems: Vulnerabilities and Countermeasures}
+      \field{year}{2020}
+      \field{pages}{1\bibrangedash 8}
+      \range{pages}{8}
+      \verb{doi}
+      \verb 10.1109/CyberSecurity49315.2020.9138897
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

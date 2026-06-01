@@ -1,0 +1,82 @@
+La industria de la paquetería y logística está experimentando una transformación radical con la incorporación de sistemas de entrega autónoma mediante vehículos aéreos no tripulados (UAV), comúnmente conocidos como drones de reparto. Empresas como Amazon (Prime Air), UPS (Flight Forward), DHL (Parcelcopter) y Alphabet (Wing) han desplegado prototipos operativos en entornos controlados y, en algunos casos, en operaciones comerciales limitadas \cite{amazon2022drone}. Se estima que el mercado global de entrega con drones alcanzará los 30 mil millones de dólares para 2030, con una proyección de más de 500,000 unidades operativas a nivel mundial.
+
+Sin embargo, la masificación de estos sistemas trae consigo desafíos de seguridad sin precedentes. Los drones de reparto operan en espacios aéreos no controlados, estableciendo enlaces de comunicación inalámbricos con sus estaciones base para transmitir datos críticos de telemetría: coordenadas GPS, altitud, velocidad, estado de batería, comandos de navegación y, en muchos casos, transmisión de vídeo en tiempo real para supervisión de entregas \cite{yaacoub2020drone}. Estos enlaces son inherentemente vulnerables a múltiples vectores de ataque.
+
+\subsection*{A. Vectores de Ataque en Comunicaciones Dron-Base}
+
+La literatura especializada ha identificado las siguientes categorías principales de amenazas:
+
+\textbf{1) Suplantación de Identidad (Spoofing):} Un atacante puede capturar la señal de identificación del dron durante el handshake inicial y reutilizarla para hacerse pasar por el dispositivo legítimo.
+
+\textbf{2) Interceptación y Fuga de Información (Eavesdropping):} Los datos de telemetría transmitidos sin cifrar o con cifrado débil pueden ser interceptados mediante análisis de espectro radioeléctrico.
+
+\textbf{3) Inyección de Comandos (Command Injection):} Un atacante con capacidad de transmisión en la misma frecuencia puede inyectar paquetes de control falsos.
+
+\textbf{4) Ataques de Repetición (Replay Attacks):} Incluso con cifrado, si no se implementan nonces o sellos de tiempo, un atacante puede capturar paquetes cifrados válidos y retransmitirlos posteriormente.
+
+\textbf{5) Ataques de Canal Lateral:} El análisis de consumo energético, radiación electromagnética o tiempos de respuesta puede revelar información sobre las claves criptográficas almacenadas en memoria \cite{gassend2002puf}.
+
+\subsection*{B. Limitaciones de la Criptografía Tradicional}
+
+Los esquemas criptográficos convencionales presentan una debilidad estructural común: dependen de una clave secreta almacenada digitalmente en algún punto del sistema. En un dron comercial, esta clave reside típicamente en memoria flash del microcontrolador, firmware, archivos de configuración o módulos de seguridad (HSM/Secure Element), que incrementan el costo unitario entre 5 y 20 USD por unidad. Además, la infraestructura de clave pública (PKI) requerida por RSA/ECC añade complejidad operativa difícil de mantener en flotas de cientos o miles de drones.
+
+\subsection*{C. Physical Unclonable Functions (PUF) como Alternativa}
+
+Las Physical Unclonable Functions representan un paradigma diferente. En lugar de almacenar una clave, la \textit{generan} a partir de las variaciones físicas intrínsecas del silicio durante la fabricación \cite{pappu2002puf}. Formalmente, una PUF se define como una función $R = \text{PUF}(C)$ donde $C \in \{-1,1\}^n$ es un reto (challenge) de $n$ bits, y $R \in \{-1,1\}^m$ es la respuesta de $m$ bits. Las propiedades fundamentales son: evaluabilidad (dado $C$, es fácil obtener $R$ con acceso al hardware), inforjabilidad (es físicamente imposible fabricar dos PUF idénticas), impredecibilidad (conocer pares $(C_i, R_i)$ no permite predecir nuevos $R_j$), y no almacenamiento (la función CRP emerge de la física del dispositivo, nunca reside en memoria digital).
+
+\subsection*{D. Cómputo Neuromórfico y PUF Memristivas}
+
+El cómputo neuromórfico emerge como un paradigma que imita la arquitectura y el funcionamiento del cerebro biológico utilizando componentes electrónicos que emulan neuronas y sinapsis \cite{mead1990neuromorphic}. En este contexto, los \textbf{memristores} (resistores con memoria) son dispositivos de dos terminales cuya resistencia (conductancia) puede ser programada mediante la historia del voltaje aplicado, reteniendo el estado incluso sin alimentación \cite{strukov2008memristor}. Esta propiedad los hace ideales para implementar sinapsis en redes neuronales artificiales y, simultáneamente, para construir PUF físicas: las variaciones en el proceso de fabricación de los memristores producen conductancias iniciales únicas e irreproducibles, mientras que la plasticidad sináptica permite que la función PUF evolucione con el uso \cite{rajan2020memristor}.
+
+El mecanismo de \textbf{plasticidad sináptica dependiente de disparos (STDP)} es un proceso biológico donde la fuerza de una sinapsis (conductancia) se incrementa si la neurona presináptica dispara justo antes que la postsináptica, y disminuye en caso contrario \cite{bi1998stdp}. En una PUF memristiva, este mecanismo permite que los pesos del crossbar se adapten dinámicamente tras cada evaluación de CRP, haciendo que la función de mapeo sea dependiente del historial de autenticaciones y, por tanto, significativamente más difícil de modelar para un atacante.
+
+\subsection*{E. Fundamentos de Computación Neuromórfica para PUF}
+
+La computación neuromórfica se fundamenta en la premisa de que la eficiencia computacional del cerebro ($\sim$20W para $10^{11}$ neuronas) puede emularse mediante circuitos que operan en modo analógico sub-umbral \cite{mead1990neuromorphic}. Los elementos clave son: (a) neuronas artificiales que integran corriente de entrada y generan disparos cuando se supera un umbral (modelo LIF); (b) sinapsis que almacenan la fuerza de la conexión como un peso analógico; y (c) plasticidad sináptica que modifica los pesos en función de la actividad neuronal.
+
+La implementación de PUF mediante crossbars memristivos ofrece ventajas fundamentales sobre las PUF CMOS tradicionales. Los memristores presentan \textbf{variabilidad intrínseca}: incluso con voltajes de programación idénticos, la conductancia final varía entre dispositivos debido a diferencias en la formación de filamentos conductores a nanoescala \cite{strukov2008memristor}. Esta variabilidad, que es un problema para aplicaciones de memoria, se convierte en una ventaja para PUF: cada dispositivo tiene una huella digital única e irreproducible.
+
+Además, el carácter analógico de los memristores permite que la PUF neuromórfica opere en un espacio de estados continuo, a diferencia de las PUF binarias tradicionales. Esto incrementa exponencialmente la entropía disponible para autenticación. La Tabla~\ref{tab:neuro-comparison} compara las propiedades de PUF tradicionales y neuromórficas.
+
+\begin{table}[H]
+    \centering\footnotesize\setlength{\tabcolsep}{3pt}
+    \caption{Comparación: PUF Arbiter vs. PUF Neuromórfica}
+    \label{tab:neuro-comparison}
+    \begin{tabular}{|l|c|c|}
+        \hline
+        \textbf{Propiedad} & \textbf{PUF Arbiter} & \textbf{PUF Neuromórfica} \\
+        \hline
+        Tipo de valores & Binarios ($\pm1$) & Continuos $[0,1]$ \\
+        \hline
+        Mecanismo físico & Retardo CMOS & Conductancia memristiva \\
+        \hline
+        Evolución temporal & Estática & Dinámica (STDP) \\
+        \hline
+        Codificación entrada & Binaria & Spike rate \\
+        \hline
+        Resistencia a modelado & Media & Alta (estado continuo) \\
+        \hline
+        Consumo energético & $\sim$1 $\mu$J & $\sim$10-100 pJ \\
+        \hline
+        Reconfigurabilidad & No & Sí (STDP) \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsection*{F. Contribución y Objetivos}
+
+Este trabajo propone y valida un esquema de cifrado híbrido de cuatro capas que integra:
+
+\begin{enumerate}
+    \item \textbf{PUF Neuromórfica:} Simulación de una PUF basada en memristor crossbar con neuronas LIF (Leaky Integrate-and-Fire) y actualización de pesos mediante STDP. El preprocesamiento del reto utiliza codificación por tasa de disparos (rate coding), transformando cada bit del reto en una tasa de disparo que modula las conductancias del crossbar. Cada capa del cifrado deriva una clave única e independiente mediante \texttt{PUFKeyDerivation}, que evalúa la PUF en múltiples niveles de ruido y aplica SHA-256 con una sal específica por capa.
+    \item \textbf{AES-256-CBC:} Primera capa de cifrado por bloques con clave de 256 bits derivada de la PUF (sal \texttt{"AES-CBC"}) y vector de inicialización aleatorio de 16 bytes. El texto plano se rellena con PKCS7 antes del cifrado, garantizando confusión a nivel de bloques de 16 bytes.
+    \item \textbf{AES-256-CTR:} Segunda capa de cifrado de flujo con clave de 256 bits derivada de la PUF (sal \texttt{"AES-CTR"}) y nonce aleatorio de 16 bytes. Al operar en modo contador, convierte el bloque AES en un generador de flujo que cifra sin necesidad de relleno adicional.
+    \item \textbf{Permutación Spike:} Transformación no lineal a nivel de byte basada en el patrón de disparos de la PUF neuromórfica. Cada byte se rota 1 bit a la izquierda o derecha según el valor del bit de disparo correspondiente, introduciendo difusión vinculada al estado interno del crossbar.
+    \item \textbf{ChaCha20:} Cifrado de flujo final con clave de 256 bits derivada de la PUF (sal \texttt{"ChaCha20-Final"}) e IV aleatorio de 16 bytes. Proporciona la capa de cifrado estándar NIST que sella el mensaje completo.
+\end{enumerate}
+
+El algoritmo se aplica al escenario \textbf{Drone de Reparto}, donde se simula la autenticación mutua basada en CRP entre dron y estación base, el cifrado de telemetría en vuelo, la detección de drones falsos mediante discrepancia en respuesta PUF, y la evolución dinámica del crossbar memristivo mediante STDP.
+
+Los objetivos específicos de esta investigación son: (1) diseñar un algoritmo de cifrado propio multicapas que combine PUF neuromórfica con criptografía clásica y moderna; (2) implementar un prototipo funcional en Python con simulación de vuelo y telemetría; (3) evaluar la tasa de éxito en cifrado/descifrado y detección de suplantación; (4) validar el modelo de almacenamiento helper data con PostgreSQL; (5) sentar las bases metodológicas para implementación en hardware memristivo real.
+
+El resto del documento se organiza como sigue: la Sección II detalla la metodología y arquitectura del sistema (fundamentos neuromórficos, cifrador multicapa, protocolo de autenticación). La Sección III expone los resultados experimentales sobre 1,000 iteraciones. La Sección IV discute los hallazgos, limitaciones e implicaciones para el estado del arte. Finalmente, la Sección V presenta las conclusiones y líneas de trabajo futuro.

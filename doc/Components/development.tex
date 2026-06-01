@@ -1,0 +1,21 @@
+El cómputo neuromórfico, inaugurado por Mead \cite{mead1990neuromorphic}, propone una alternativa al paradigma de von Neumann mediante arquitecturas que emulan el procesamiento paralelo y masivamente distribuido del cerebro biológico. En el ámbito de la seguridad hardware, la convergencia entre PUF y neuromórfica ha generado un área de investigación activa.
+
+\subsection*{A. PUF Arbiter y sus Variantes}
+
+Las PUF Arbiter, propuestas originalmente por Gassend \cite{gassend2002puf} y formalizadas por Suh \cite{suh2007puf}, constituyen la familia más estudiada de PUF electrónicas. Consisten en dos rutas de señal con retardos iguales en diseño, pero que divergen debido a variaciones de fabricación. La diferencia de retardo acumulada determina la salida. La versión XOR Arbiter utiliza $k$ cadenas paralelas cuya salida se combina mediante XOR lógico, incrementando la resistencia a ataques de modelado.
+
+\subsection*{B. Memristores en Seguridad Hardware}
+
+Desde el descubrimiento experimental del memristor por Strukov \cite{strukov2008memristor}, se ha explorado su aplicación como elemento de seguridad. Rajan \cite{rajan2020memristor} demostró que los crossbars memristivos pueden funcionar como PUF aprovechando las variaciones intrínsecas en la conductancia de programación. A diferencia de las PUF CMOS tradicionales, los memristores ofrecen: (a) valores de conductancia analógicos continuos (no solo binarios), (b) retención de estado no volátil, y (c) posibilidad de reconfiguración mediante pulsos de voltaje.
+
+\subsection*{C. STDP y Aprendizaje Neuromórfico}
+
+El mecanismo STDP, caracterizado biológicamente por Bi y Poo \cite{bi1998stdp}, establece que la fuerza de una sinapsis se potencia si la neurona presináptica dispara antes que la postsináptica (potenciación a largo plazo, LTP), y se debilita en el orden inverso (depresión a largo plazo, LTD). En el contexto de PUF, el STDP permite que las conductancias del crossbar evolucionen con cada autenticación, haciendo que la función PUF dependa del historial de uso. Esto contrasta con las PUF estáticas donde la función de mapeo es fija tras la fabricación.
+
+\subsection*{D. Cifrado Multicapas para IoT}
+
+Trabajos previos en cifrado para sistemas IoT han explorado la combinación de cifrados clásicos y modernos para maximizar la seguridad con recursos limitados. Yaacoub \cite{yaacoub2020drone} proporciona un análisis exhaustivo de los vectores de ataque en sistemas de drones, destacando la necesidad de autenticación hardware. Sin embargo, la mayoría de los esquemas existentes dependen de claves almacenadas o infraestructura PKI, sin aprovechar la inforjabilidad física de las PUF ni la evolución dinámica ofrecida por la computación neuromórfica.
+
+\subsection*{E. Posicionamiento de este Trabajo}
+
+Este trabajo se distingue de la literatura existente en tres aspectos fundamentales: (1) es el primer esquema que integra una PUF neuromórfica con plasticidad STDP como núcleo de autenticación para comunicaciones dron-base, combinada con una cascada de cifrados moderna (AES-256-CBC + AES-256-CTR + Spike + ChaCha20) con claves independientes por capa; (2) la inclusión de una capa de permutación spike, derivada del patrón de disparos neuronales, añade una transformación criptográfica que no existe en esquemas previos; (3) la evolución dinámica de la función PUF mediante STDP proporciona una defensa activa contra ataques de modelado, a diferencia de las PUF estáticas que ofrecen una defensa puramente pasiva.

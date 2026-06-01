@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroPUF Drone Crypto Console</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="container">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 32 32" width="28" height="28">
+          <circle cx="16" cy="16" r="14" fill="none" stroke="#00d4ff" stroke-width="1.5" opacity="0.3"/>
+          <circle cx="16" cy="16" r="8" fill="none" stroke="#00d4ff" stroke-width="1" opacity="0.5"/>
+          <circle cx="16" cy="16" r="3" fill="#00d4ff"/>
+          <line x1="16" y1="3" x2="16" y2="9" stroke="#00d4ff" stroke-width="1" opacity="0.6"/>
+          <line x1="16" y1="23" x2="16" y2="29" stroke="#00d4ff" stroke-width="1" opacity="0.6"/>
+          <line x1="3" y1="16" x2="9" y2="16" stroke="#00d4ff" stroke-width="1" opacity="0.6"/>
+          <line x1="23" y1="16" x2="29" y2="16" stroke="#00d4ff" stroke-width="1" opacity="0.6"/>
+        </svg>
+      </div>
+      <div>
+        <h1>NEUROPUF DRONE CONSOLE</h1>
+        <div class="subtitle">Computaci&oacute;n Neurom&oacute;rfica &middot; Cifrado PCVC &middot; Memristor Crossbar</div>
+      </div>
+    </div>
+    <div class="header-status">
+      <span id="auth-badge" class="badge badge-warning">AUTH</span>
+      <span id="crypto-badge" class="badge badge-info">PCVC NEURO</span>
+      <span id="neuro-badge" class="badge badge-neuro">STDP ACTIVE</span>
+    </div>
+  </header>
+
+  <div class="dashboard-summary">
+    <div class="stat-card">
+      <div class="stat-icon">&#9632;</div>
+      <div class="stat-info">
+        <div class="stat-label">PAQUETES</div>
+        <div class="stat-value" id="s-packets">0</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">&#9889;</div>
+      <div class="stat-info">
+        <div class="stat-label">BATER&Iacute;A</div>
+        <div class="stat-value" id="s-battery">100%</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">&#128200;</div>
+      <div class="stat-info">
+        <div class="stat-label">THROUGHPUT</div>
+        <div class="stat-value" id="s-throughput">--</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">&#9888;</div>
+      <div class="stat-info">
+        <div class="stat-label">ATAQUES</div>
+        <div class="stat-value" id="s-attacks">0</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">&#9881;</div>
+      <div class="stat-info">
+        <div class="stat-label">PUF EDAD</div>
+        <div class="stat-value" id="s-age">0s</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card" id="telemetry-card">
+      <div class="card-header">
+        <span>&#127760;</span> TELEMETR&Iacute;A EN VIVO
+        <span class="live-dot"></span>
+      </div>
+      <div class="card-body">
+        <div class="telemetry-grid">
+          <div class="t-item">
+            <div class="t-label">DRONE ID</div>
+            <div class="t-value" id="t-drone-id">neuro-drone-01</div>
+          </div>
+          <div class="t-item">
+            <div class="t-label">GPS</div>
+            <div class="t-value" id="t-gps">-16.4090, -71.5374</div>
+          </div>
+          <div class="t-item">
+            <div class="t-label">ALTITUD</div>
+            <div class="t-value" id="t-alt">100.0 <span class="unit">m</span></div>
+          </div>
+          <div class="t-item">
+            <div class="t-label">VELOCIDAD</div>
+            <div class="t-value" id="t-speed">15.0 <span class="unit">m/s</span></div>
+          </div>
+          <div class="t-item">
+            <div class="t-label">HEADING</div>
+            <div class="t-value" id="t-heading">0&deg;</div>
+          </div>
+          <div class="t-item">
+            <div class="t-label">BATER&Iacute;A</div>
+            <div class="t-value">
+              <div class="battery-bar">
+                <div class="battery-fill" id="battery-fill" style="width:100%"></div>
+              </div>
+              <span id="battery-text">100%</span>
+            </div>
+          </div>
+          <div class="t-item">
+            <div class="t-label">SE&Ntilde;AL</div>
+            <div class="t-value">
+              <div class="signal-bars" id="signal-bars">
+                <span data-h="4"></span><span data-h="8"></span><span data-h="12"></span><span data-h="16"></span><span data-h="20"></span>
+              </div>
+            </div>
+          </div>
+          <div class="t-item">
+            <div class="t-label">ESTADO</div>
+            <div class="t-value" id="t-status">EN RUTA</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="puf-card">
+      <div class="card-header">
+        <span>&#129504;</span> NEUROMORPHIC PUF CORE
+      </div>
+      <div class="card-body">
+        <div class="puf-diagram">
+          <div class="puf-box puf-input">
+            <div class="puf-label">Spike Encoding</div>
+            <div class="puf-voltage-bars" id="puf-spikes">
+              <div style="height:20%"></div><div style="height:60%"></div><div style="height:40%"></div><div style="height:90%"></div><div style="height:10%"></div>
+            </div>
+            <div class="puf-bits" id="puf-challenge">00000</div>
+          </div>
+          <div class="puf-arrow">&rarr;</div>
+          <div class="puf-box puf-core">
+            <div class="puf-label">Memristor Crossbar</div>
+            <div class="crossbar-viz" id="crossbar-viz">
+              <canvas id="crossbar-canvas" width="80" height="80"></canvas>
+            </div>
+            <div class="puf-sub">STDP &middot; Conductancias</div>
+          </div>
+          <div class="puf-arrow">&rarr;</div>
+          <div class="puf-box puf-output">
+            <div class="puf-label">LIF Decisi&oacute;n</div>
+            <div id="puf-neuron-viz" class="neuron-viz">
+              <svg viewBox="0 0 40 40" width="36" height="36">
+                <circle cx="20" cy="20" r="16" fill="none" stroke="#00c853" stroke-width="1.5" opacity="0.4"/>
+                <circle cx="20" cy="20" r="8" fill="none" stroke="#00c853" stroke-width="1" opacity="0.6"/>
+                <circle cx="20" cy="20" r="3" id="neuron-dot" fill="#00c853"/>
+              </svg>
+            </div>
+            <div class="puf-bits" id="puf-response">-1 / +1</div>
+          </div>
+        </div>
+        <div class="puf-stats">
+          <div class="puf-stat"><span>Conductancia &mu;:</span> <strong id="puf-cond-mean">0.50</strong></div>
+          <div class="puf-stat"><span>STDP lr:</span> <strong>0.005</strong></div>
+          <div class="puf-stat"><span>t_window:</span> <strong>10</strong></div>
+          <div class="puf-stat"><span>CRPs generados:</span> <strong id="puf-crp-count">0</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="crypto-card">
+      <div class="card-header">
+        <span>&#128477;</span> CIFRADO NEURO-PCVC
+      </div>
+      <div class="card-body">
+        <div class="crypto-layers">
+          <div class="layer">
+            <div class="layer-num">01</div>
+            <div class="layer-info">
+              <div class="layer-name">Caesar Scramble</div>
+              <div class="layer-val" id="c-caesar">Shift: --</div>
+            </div>
+          </div>
+          <div class="layer-arrow">&darr;</div>
+          <div class="layer">
+            <div class="layer-num">02</div>
+            <div class="layer-info">
+              <div class="layer-name">Vigen&egrave;re Cipher</div>
+              <div class="layer-val" id="c-vigenere">Key: --</div>
+            </div>
+          </div>
+          <div class="layer-arrow">&darr;</div>
+          <div class="layer">
+            <div class="layer-num">03</div>
+            <div class="layer-info">
+              <div class="layer-name">Spike Permutation</div>
+              <div class="layer-val" id="c-spike">Pattern: --</div>
+            </div>
+          </div>
+          <div class="layer-arrow">&darr;</div>
+          <div class="layer">
+            <div class="layer-num">04</div>
+            <div class="layer-info">
+              <div class="layer-name">ChaCha20 (key=PUF)</div>
+              <div class="layer-val" id="c-chacha">IV: --</div>
+            </div>
+          </div>
+          <div class="layer-arrow">&darr;</div>
+          <div class="layer layer-result">
+            <div class="layer-num">&#10003;</div>
+            <div class="layer-info">
+              <div class="layer-name">CIFRADO FINAL</div>
+              <div class="layer-val" id="c-result">---</div>
+            </div>
+          </div>
+        </div>
+        <div id="crypto-size" class="crypto-size"></div>
+      </div>
+    </div>
+
+    <div class="card" id="map-card">
+      <div class="card-header">
+        <span>&#128506;</span> MAPA DE VUELO
+        <span class="badge badge-neuro" style="margin-left:auto">LIVE</span>
+      </div>
+      <div class="card-body map-body">
+        <canvas id="map-canvas"></canvas>
+        <div class="map-overlay">
+          <span id="map-coords">-16.4090, -71.5374</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="chart-card">
+      <div class="card-header">
+        <span>&#128200;</span> SE&Ntilde;ALES NEUROM&Oacute;RFICAS
+      </div>
+      <div class="card-body chart-body">
+        <canvas id="chart-canvas"></canvas>
+      </div>
+    </div>
+
+    <div class="card" id="log-card">
+      <div class="card-header">
+        <span>&#128196;</span> REGISTRO DE EVENTOS
+      </div>
+      <div class="card-body log-body">
+        <div id="log-entries"></div>
+      </div>
+    </div>
+
+    <div class="card" id="attack-card">
+      <div class="card-header">
+        <span>&#128520;</span> SIMULADOR DE ATAQUE
+      </div>
+      <div class="card-body">
+        <div class="attack-controls">
+          <button class="btn btn-attack" onclick="simulateAttack(111)">&#9876; Falso Drone (111)</button>
+          <button class="btn btn-attack" onclick="simulateAttack(222)">&#9876; Falso Drone (222)</button>
+          <button class="btn btn-attack" onclick="simulateAttack(333)">&#9876; Falso Drone (333)</button>
+          <button class="btn btn-reset" onclick="resetDrone()">&#8635; Reiniciar</button>
+        </div>
+        <div id="attack-result" class="attack-result"></div>
+        <div id="attack-log" class="attack-log"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span>PCVC NeuroPUF v2.0 &middot; Memristor Crossbar + STDP &middot; &copy; 2026</span>
+  </footer>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

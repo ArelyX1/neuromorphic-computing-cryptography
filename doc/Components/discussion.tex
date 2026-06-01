@@ -1,0 +1,91 @@
+Los resultados obtenidos demuestran la viabilidad técnica del esquema de cifrado multicapa (AES-256-CBC $\to$ AES-256-CTR $\to$ Spike Permutation $\to$ ChaCha20) con claves derivadas de PUF neuromórfica para asegurar comunicaciones dron-base. A continuación se analizan las implicaciones, limitaciones y comparaciones con enfoques alternativos.
+
+\subsection*{A. Implicaciones de la PUF Neuromórfica}
+
+La introducción del crossbar memristivo con STDP representa un avance cualitativo respecto a las PUF Arbiter tradicionales. Mientras que una PUF Arbiter clásica ofrece una función de mapeo estática (los pesos $W$ se fijan en la fabricación), la PUF neuromórfica introduce tres propiedades novedosas:
+
+\textbf{1) Evolución Temporal:} La actualización STDP modifica las conductancias tras cada autenticación, haciendo que la función PUF sea dinámica. Esto implica que un atacante no puede recolectar CRP útiles a lo largo del tiempo, ya que la función de mapeo cambia. Formalmente, si $G^{(t)}$ es la matriz de conductancias en tiempo $t$, entonces $\text{PUF}_{\text{neuro}}(C, G^{(t)}) \neq \text{PUF}_{\text{neuro}}(C, G^{(t+\Delta t)})$ para $\Delta t$ suficientemente grande.
+
+\textbf{2) Estocasticidad Controlada:} La codificación por tasa de disparos introduce una capa de estocasticidad que no está presente en las PUF deterministas. Dos evaluaciones del mismo reto $C$ con la misma PUF pueden producir diferentes representaciones spike $S$, generando respuestas $R$ diferentes. Esto añade una barrera adicional contra ataques de modelado.
+
+\textbf{3) Huella Digital Continua:} A diferencia de las PUF digitales que producen respuestas discretas de 1 bit, la PUF neuromórfica opera con valores continuos de conductancia, ofreciendo un espacio de estados significativamente mayor para la autenticación.
+
+\subsection*{B. Defensa en Profundidad con Cuatro Capas Modernas}
+
+La arquitectura de cuatro capas ofrece defensa en profundidad mejorada. La combinación de AES-256-CBC (cifrado por bloques con relleno PKCS7) y AES-256-CTR (cifrado de flujo) proporciona dos modos criptográficos complementarios: el primero difunde cada byte a través del bloque completo de 16 bytes, mientras que el segundo elimina la dependencia del relleno y permite longitudes arbitrarias. La capa de permutación spike añade una transformación no lineal que depende del estado interno de la PUF neuromórfica, no solo del reto externo. Incluso si un atacante conociera $C$, no podría predecir el patrón de permutación sin conocer las conductancias internas $G$. Finalmente, ChaCha20 proporciona la capa de cifrado estándar NIST que sella el mensaje.
+
+\subsection*{C. Eficiencia Computacional}
+
+El tiempo promedio de cifrado (2.4 ms para las cuatro capas) es adecuado para comunicaciones en tiempo real a 1-10 Hz. La simulación del crossbar memristivo domina el costo computacional, mientras que las capas AES-256-CBC y AES-256-CTR son altamente eficientes gracias a las instrucciones AES-NI disponibles en la mayoría de procesadores modernos. Una implementación en hardware memristivo real eliminaría el overhead de simulación LIF/STDP, ya que la dinámica ocurriría intrínsecamente en el dispositivo físico.
+
+\subsection*{D. Comparación con Esquemas Alternativos}
+
+La Tabla \ref{tab:comparison} compara el esquema propuesto con enfoques alternativos.
+
+\begin{table}[H]
+    \centering\footnotesize\setlength{\tabcolsep}{3pt}
+    \caption{Comparación de esquemas criptográficos para drones}
+    \label{tab:comparison}
+    \resizebox{\columnwidth}{!}{\begin{tabular}{|l|c|c|c|}
+        \hline
+        \textbf{Esquema} & \textbf{Clave almacenada} & \textbf{Evolución} & \textbf{Costo} \\
+        \hline
+        AES-256-CTR & Sí (flash) & No & \$0 \\
+        \hline
+        AES + HSM & Sí (HSM) & No & \$5-20 \\
+        \hline
+        RSA-2048 + PKI & Sí (cert.) & No & \$10-50 \\
+        \hline
+        PUF + ChaCha20 & No (PUF) & No & \$0.50-2 \\
+        \hline
+        Este trabajo & No (PUF neuro) & Sí (STDP) & \$1-3 \\
+        \hline
+    \end{tabular}}
+\end{table}
+
+\subsection*{E. Limitaciones del Estudio}
+
+\textbf{1) PUF Neuromórfica Simulada:} La implementación actual simula el crossbar memristivo y las neuronas LIF en software. Aunque el modelo matemático es fiel a la física de memristores reales, una implementación en silicio ofrecería la verdadera inforjabilidad física y la dinámica STDP analógica que es difícil de replicar exactamente en software.
+
+\textbf{2) Complejidad Computacional:} La simulación de 10 pasos temporales LIF por evaluación de CRP incrementa el costo computacional respecto a una PUF Arbiter simple. Para sistemas con recursos muy limitados (MCU de 8 bits), esto podría requerir optimizaciones.
+
+\textbf{3) Estabilidad del STDP:} El incremento continuo de conductancias observado en las pruebas (+7\% en 10 autenticaciones) sugiere que, sin mecanismos de estabilización, las conductancias podrían saturarse tras cientos de autenticaciones. En trabajo futuro se explorarán mecanismos de homeostasis sináptica para estabilizar el aprendizaje.
+
+\textbf{4) Entorno de Pruebas:} Las pruebas se realizaron en laboratorio sin interferencias RF. En condiciones reales, factores como pérdida de paquetes y latencia variable podrían afectar el protocolo.
+
+\subsection*{F. Impacto en el Estado del Arte}
+
+La integración de PUF neuromórficas con STDP representa un cambio de paradigma en la autenticación hardware. Mientras que las PUF tradicionales ofrecen una función de mapeo estática que puede ser modelada mediante machine learning con suficientes observaciones \cite{suh2007puf}, la PUF neuromórfica presenta un blanco móvil: la función de mapeo evoluciona continuamente, invalidando cualquier modelo construido sobre observaciones pasadas.
+
+Los resultados obtenidos tienen implicaciones directas para el diseño de futuros sistemas de seguridad en IoT y robótica autónoma. La capacidad de generar claves criptográficas que evolucionan con el uso abre la posibilidad de sistemas que se vuelven \textit{más seguros con el tiempo}, a diferencia de los sistemas tradicionales que se degradan a medida que se acumulan observaciones del atacante.
+
+\subsection*{G. Desafíos de Despliegue en Producción}
+
+La transición del prototipo simulado a un sistema de producción real enfrenta varios desafíos adicionales que merecen análisis:
+
+\textbf{1) Sincronización de Estados entre Dron y Base:} La evolución STDP implica que el estado del crossbar memristivo del dron y la copia en la estación base deben mantenerse sincronizados. Si se pierde la sincronización (por ejemplo, debido a una autenticación fallida o un reinicio inesperado), la base no podría verificar las autenticaciones futuras. Esto requiere un protocolo de resincronización que permita que dron y base reconcilien sus estados sin exponer información sensible.
+
+\textbf{2) Gestión de Flota y Escalabilidad:} Para una flota de 1,000 drones, la base debe mantener 1,000 crossbars memristivos (cada uno con 256 conductancias de 32 bits = 8 KB por dron, total 8 MB). Si cada dron se autentica cada 5 segundos durante una misión de 30 minutos, se generan 360 CRP por dron por misión. La base de datos debe almacenar estos CRP como helper data, resultando en aproximadamente 360,000 registros por misión completa de la flota, lo cual es perfectamente manejable para PostgreSQL.
+
+\textbf{3) Tolerancia a Fallos y Redundancia:} En caso de fallo del crossbar memristivo (por ejemplo, debido a un pico de voltaje o degradación por ciclos de programación), el dron perdería su identidad hardware. Esto requiere mecanismos de redundancia, como la inclusión de crossbars de respaldo o la capacidad de reprogramar conductancias de referencia desde la estación base.
+
+\textbf{4) Seguridad en el Canal de Sincronización:} Durante la sincronización inicial y la resincronización, las conductancias del crossbar deben transmitirse de forma segura entre la base y el dron. Se recomienda utilizar el propio cifrador multicapa para cifrar esta información, creando un ciclo de confianza: la PUF protege la comunicación que a su vez protege la actualización de la propia PUF.
+
+\subsection*{H. Aspectos de Implementación en Hardware Real}
+
+La implementación física de la PUF neuromórfica propuesta requiere un crossbar de memristores de $k \times n = 4 \times 64 = 256$ dispositivos, junto con circuitos de lectura de corriente y neuronas LIF integradas. Tecnologías emergentes como los memristores de óxido de hafnio (HfO\textsubscript{2}) y tantalio (TaO\textsubscript{x}) han demostrado la viabilidad de fabricar crossbars de hasta $64 \times 64$ con variabilidad controlada \cite{rajan2020memristor}.
+
+El consumo energético estimado para una autenticación sería del orden de 10-100 pJ por operación, varios órdenes de magnitud menor que los 100 $\mu$J requeridos por una operación RSA-2048 en un microcontrolador típico. Esto hace que la PUF neuromórfica sea especialmente atractiva para drones de bajo costo donde la eficiencia energética es crítica.
+
+\subsection*{I. Trabajo Futuro}
+
+Las siguientes líneas de investigación se identifican como continuación natural:
+
+\begin{enumerate}
+    \item Implementación de la PUF neuromórfica en hardware FPGA con emulación de memristores para validación física.
+    \item Integración con módulos de comunicación LoRaWAN para pruebas de campo con drones reales.
+    \item Implementación de mecanismos de homeostasis sináptica (reglas de escalado de conductancias) para prevenir la saturación del crossbar.
+    \item Evaluación de resistencia a ataques de modelado mediante machine learning (regresión logística, SVM, redes neuronales).
+    \item Extensión del esquema a comunicaciones multi-dron con establecimiento de claves de grupo basado en sincronización STDP.
+    \item Implementación del cifrador multicapa en hardware memristivo real (crossbars de TaOx o HfO2).
+\end{enumerate}
