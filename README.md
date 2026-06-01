@@ -14,7 +14,7 @@ Esquema de cifrado híbrido de cuatro capas con PUF neuromórfica para seguridad
 
 ```bash
 # 1. Clonar el repositorio
-git clone https://github.com/arelyxl/neuromorphic-computing-cryptography.git
+git clone https://github.com/ArelyX1/neuromorphic-computing-cryptography.git
 cd neuromorphic-computing-cryptography
 
 # 2. Crear y activar entorno virtual
