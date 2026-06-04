@@ -78,7 +78,7 @@ Dashboard en `http://localhost:3000`. El proxy de Vite redirige `/api`, `/stream
 | Archivo | Objetivo |
 |---------|----------|
 | `simulation/hybrid_puf.py` | **PUF neuromórfica híbrida**. Contiene `MemristorCrossbar` (crossbar de memristores con conductancias seedeables), `LIFNeuron` (neurona Leaky Integrate-and-Fire usando `snntorch.Leaky`), `NeuromorphicPUFPreprocessor` (codificación de spikes por rate-coding), `NeuromorphicHybridPUF` (clase base con evaluación de 4 bits, STDP opcional, generación de CRP), y `HybridPUF` (wrapper legacy con preprocesadores Vigenere/Caesar/XOR para compatibilidad). |
-| `custom_cipher.py` | **Cifrado multicapa PUF-driven**. `PUFKeyDerivation` deriva claves AES de 256 bits a partir de respuestas PUF con `SHA-256`. `PUFCipher` implementa el pipeline de 4 capas: **AES-256-CBC** (PKCS7) → **AES-256-CTR** → **Spike Permutation** (permutación de bits basada en el challenge) → **ChaCha20**. |
+| `custom_cipher.py` | **Cifrado multicapa PUF-driven**. `PUFKeyDerivation` deriva una clave maestra PUF de 256 bits usando secuencias de bits generadas por evaluaciones múltiples de la PUF con `SHA-256`. `PUFCipher` implementa el pipeline de 4 capas a partir de la clave maestra: **AES-256-CBC** (PKCS7) → **AES-256-CTR** → **Spike Permutation** (permutación de bits basada en el challenge PUF) → **ChaCha20**. El descifrado revierte el pipeline en orden inverso. |
 | `drone_telemetry.py` | **Simulador de enlace criptográfico de dron**. `DroneCryptoLink` modela un dron real: autenticación PUF, cifrado/descifrado de telemetría, y `simulate_flight()` que genera paquetes GPS/altitud/batería, los cifra y los descifra para verificación. |
 | `db/base.py` | Declara `Base = declarative_base()` de SQLAlchemy, usado por los modelos ORM. |
 | `db/models.py` | Re-exporta los modelos SQLAlchemy desde `api.infrastructure.db.models` para mantener el núcleo autocontenido. |
@@ -94,7 +94,7 @@ Dashboard en `http://localhost:3000`. El proxy de Vite redirige `/api`, `/stream
 | `domain/ports.py` | **Puertos/abstract interfaces**: `CRPRepository`, `DroneRepository`, `SessionRepository`, `TelemetryRepository`, `AttackRepository`, `PUFPort`. Define el contrato que la infraestructura debe implementar. |
 | `domain/services.py` | **Servicios del dominio**: `DroneAuthService` (autenticación PUF), `TelemetryService` (envío de telemetría cifrada), `AttackDetectionService` (simula atacante con seed falso y compara respuestas). |
 | `application/use_cases.py` | **Casos de uso**: `AuthenticateDroneUseCase`, `SendTelemetryUseCase`, `SimulateAttackUseCase`, `GetDroneStatusUseCase`. Orquestan servicios del dominio. |
-| `infrastructure/puf_adapter.py` | **Adaptador PUF** (`HybridPUFAdapter`). Implementa `PUFPort` wrappeando `HybridPUF`. Incluye `_puf_bit_sequence()` para derivar secuencias de bits multi-evaluación y cifrado/descifrado multicapa completo (AES-CBC → AES-CTR → Spike → ChaCha20). |
+| `infrastructure/puf_adapter.py` | **Adaptador PUF** (`HybridPUFAdapter`). Implementa `PUFPort` wrappeando `HybridPUF`. Incluye `_puf_bit_sequence()` para derivar secuencias de bits mediante evaluaciones múltiples con ruido incremental, `_derive_key()` que genera una clave maestra única por challenge usando `SHA-256`, y `encrypt()`/`decrypt()` que implementan el pipeline multicapa completo (AES-CBC → AES-CTR → Spike → ChaCha20) a partir de una sola derivación PUF. |
 | `infrastructure/db/config.py` | Configuración de motores SQLAlchemy asíncrono (`asyncpg`, pool_size=20) y síncrono (para el thread de simulación). |
 | `infrastructure/db/models.py` | Modelos ORM: `CRPRecordModel`, `DroneIdentityModel`, `DroneSessionModel`, `TelemetryLogModel`, `AttackLogModel`. |
 | `infrastructure/db/repositories.py` | Implementaciones SQLAlchemy de los puertos: `SQLAlchemyCRPRepository`, `SQLAlchemyDroneRepository`, `SQLAlchemySessionRepository`, `SQLAlchemyTelemetryRepository`, `SQLAlchemyAttackRepository`. |
@@ -108,13 +108,22 @@ Dashboard en `http://localhost:3000`. El proxy de Vite redirige `/api`, `/stream
 
 | Archivo | Objetivo |
 |---------|----------|
-| `src/App.jsx` | **Dashboard principal React**. Usa SSE para telemetría en tiempo real, muestra estado del dron (GPS, altitud, batería, velocidad), información criptográfica (ciphertext, IVs, nonces), detección de ataques, y estadísticas de fuerza bruta. |
-| `src/main.jsx` | Punto de entrada de React. |
-| `index.html` | HTML base para Vite. |
+| `src/App.jsx` | **Dashboard principal React**. Usa SSE para telemetría en tiempo real, muestra estado del dron (GPS, altitud, batería, velocidad), información criptográfica (ciphertext, IVs, nonces, spike permutation), detección de ataques, panel PUF (conductancias, voltajes, membranas, STDP), y estadísticas de fuerza bruta. |
+| `src/index.css` | Estilos del dashboard React: glassmorphism dark, grid del PUF core, animaciones de partículas, panel de capas criptográficas. |
+| `src/main.jsx` | Punto de entrada de React; monta `<App />` en `#root`. |
+| `index.html` | HTML base para Vite con preconnect a Google Fonts (JetBrains Mono, Inter). |
 | `vite.config.js` | Configuración de Vite: puerto 3000, proxy de `/api`, `/stream`, `/graphql` a `http://127.0.0.1:5000`. |
+| `package.json` | Dependencias: `react`, `react-dom`, `vite`, `@vitejs/plugin-react`. |
 | `static/index.html` | Versión estática standalone (copia de `api/static/index.html` para despliegue sin backend). |
 | `static/app.js` | Versión estática standalone. |
 | `static/style.css` | Versión estática standalone. |
+
+### Tests — `tests/`
+
+| Archivo | Objetivo |
+|---------|----------|
+| `test_comprehensive.py` | **Suite de tests completa**: creación de PUF híbrida con snntorch, autenticación dron-servidor, cifrado/descifrado multicapa, permutación de spikes, STDP, sintonización de tasa de aprendizaje, verificación de integridad crossbar, detección de ataques de suplantación, ataques MITM con llave falsa. |
+| `test_api.py` | Tests de integración del servidor Flask: autenticación vía GraphQL, polling de estado REST, conexión SSE, simulación de ataques, reinicio del sistema. |
 
 ### Raíz
 
