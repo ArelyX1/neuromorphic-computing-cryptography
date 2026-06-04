@@ -37,10 +37,10 @@ class SimulateAttackUseCase:
         self.attack_service = attack_service
         self.puf = puf
 
-    def execute(self, fake_seed: int) -> AttackLog:
+    async def execute(self, fake_seed: int) -> AttackLog:
         challenge = self.puf.generate_challenge()
         real_response = self.puf.evaluate(challenge, noisy=False)
-        return self.attack_service.simulate_attack(fake_seed, challenge.tolist() if hasattr(challenge, 'tolist') else challenge, real_response)
+        return await self.attack_service.simulate_attack(fake_seed, challenge.tolist() if hasattr(challenge, 'tolist') else challenge, real_response)
 
 
 class GetDroneStatusUseCase:

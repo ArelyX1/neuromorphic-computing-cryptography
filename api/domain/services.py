@@ -75,7 +75,7 @@ class AttackDetectionService:
         self.attack_repo = attack_repo
         self.puf = puf
 
-    def simulate_attack(self, fake_seed: int, real_challenge: list, real_response: int) -> AttackLog:
+    async def simulate_attack(self, fake_seed: int, real_challenge: list, real_response: int) -> AttackLog:
         import numpy as np
         from puf_crypto.simulation.hybrid_puf import HybridPUF
 
@@ -90,4 +90,6 @@ class AttackDetectionService:
             real_response=real_response,
             detected=detected,
         )
+        if self.attack_repo:
+            await self.attack_repo.save(log)
         return log

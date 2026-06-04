@@ -90,17 +90,18 @@ async def resolve_send_telemetry(input: TelemetryInput) -> EncryptedPayloadType:
         )
 
 
-def resolve_simulate_attack(fake_seed: int) -> AttackLogType:
-    from ...infrastructure.db.config import AsyncSessionLocal
-    attack_service = AttackDetectionService(None, ctx.puf)
-    use_case = SimulateAttackUseCase(attack_service, ctx.puf)
-    log = use_case.execute(fake_seed)
-    return AttackLogType(
-        fake_seed=log.fake_seed,
-        fake_response=log.fake_response,
-        real_response=log.real_response,
-        detected=log.detected,
-    )
+async def resolve_simulate_attack(fake_seed: int) -> AttackLogType:
+    async with ctx.deps() as session:
+        attack_repo = SQLAlchemyAttackRepository(session)
+        attack_service = AttackDetectionService(attack_repo, ctx.puf)
+        use_case = SimulateAttackUseCase(attack_service, ctx.puf)
+        log = await use_case.execute(fake_seed)
+        return AttackLogType(
+            fake_seed=log.fake_seed,
+            fake_response=log.fake_response,
+            real_response=log.real_response,
+            detected=log.detected,
+        )
 
 
 async def resolve_get_telemetry(drone_id: str, limit: int = 50) -> List[TelemetryType]:

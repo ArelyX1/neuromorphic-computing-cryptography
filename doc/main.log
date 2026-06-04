@@ -1,4 +1,4 @@
-This is LuaHBTeX, Version 1.18.0 (TeX Live 2025/dev/Debian)  (format=lualatex 2026.3.19)  1 JUN 2026 03:46
+This is LuaHBTeX, Version 1.18.0 (TeX Live 2025/dev/Debian)  (format=lualatex 2026.3.19)  2 JUN 2026 14:52
  restricted system commands enabled.
 **main.tex
 (./main.tex
@@ -1475,9 +1475,6 @@ Package microtype Info: Loading generic protrusion settings for font family
 
 
 [2]) (./Components/development.tex
-Underfull \vbox (badness 1400) has occurred while \output is active []
-
-
 
 ) (./Components/design.tex
 
@@ -1673,12 +1670,12 @@ Package logreq Info: Writing requests to 'main.run.xml'.
 
 Here is how much of LuaTeX's memory you used:
  33677 strings out of 475512
- 596955,1977958 words of node,token memory allocated
+ 596935,1977958 words of node,token memory allocated
  1120 words of node memory still in use:
    8 hlist, 2 vlist, 2 rule, 1 local_par, 8 glue, 5 kern, 2 penalty, 3 glyph, 90
  attribute, 105 glue_spec, 47 attribute_list, 1 write, 5 pdf_action nodes
-   avail lists: 1:5,2:10288,3:760,4:722,5:18024,6:268,7:22651,8:66,9:31127,10:23
-,11:2340
+   avail lists: 1:6,2:10288,3:760,4:722,5:18024,6:268,7:22651,8:64,9:31127,10:24
+,11:2412
  55915 multiletter control sequences out of 65536+600000
  132 fonts using 11922103 bytes
  86i,17n,115p,2088b,1795s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -1709,7 +1706,7 @@ texmf/fonts/type1/public/lm/lmsy6.pfb></usr/share/texmf/fonts/type1/public/lm/lm
 sy7.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy8.pfb></usr/share/texlive/te
 xmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/share/texlive/texm
 f-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (12 pages, 353304 bytes).
+Output written on main.pdf (12 pages, 354011 bytes).
 
 PDF statistics: 438 PDF objects out of 1000 (max. 8388607)
  355 compressed objects within 4 object streams

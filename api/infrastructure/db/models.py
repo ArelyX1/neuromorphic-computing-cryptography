@@ -1,11 +1,8 @@
 import uuid
-import json
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Integer, Float, DateTime, Boolean, Text, JSON
+from sqlalchemy import Column, String, Integer, Float, DateTime, Boolean, Text
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
+from puf_crypto.db.base import Base
 
 
 class CRPRecordModel(Base):

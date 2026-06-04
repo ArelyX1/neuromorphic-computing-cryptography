@@ -25,8 +25,8 @@ class Query:
         return await resolve_get_telemetry(drone_id, limit)
 
     @strawberry.field
-    def simulate_attack(self, fake_seed: int) -> AttackLogType:
-        return resolve_simulate_attack(fake_seed)
+    async def simulate_attack(self, fake_seed: int) -> AttackLogType:
+        return await resolve_simulate_attack(fake_seed)
 
 
 @strawberry.type

@@ -29,6 +29,29 @@ drone_status = DroneStatus()
 event_queue = queue.Queue()
 
 
+def _save_telemetry_sync(packet, encrypted):
+    try:
+        from api.infrastructure.db.config import SyncSessionLocal
+        from api.infrastructure.db.models import TelemetryLogModel
+        from datetime import datetime, timezone
+        with SyncSessionLocal() as session:
+            log = TelemetryLogModel(
+                drone_id=packet.drone_id,
+                encrypted_payload=encrypted.ciphertext,
+                iv=encrypted.iv,
+                gps_lat=packet.gps_lat,
+                gps_lon=packet.gps_lon,
+                altitude=packet.altitude,
+                battery=packet.battery,
+                timestamp=datetime.now(timezone.utc),
+                verified=True,
+            )
+            session.add(log)
+            session.commit()
+    except Exception as e:
+        print(f"Warning: could not save telemetry to DB: {e}")
+
+
 def drone_simulation_loop():
     step = 0
     base_lat, base_lon = -16.4090, -71.5374
@@ -81,6 +104,7 @@ def drone_simulation_loop():
                     "size": encrypted.size,
                 }
             })
+            _save_telemetry_sync(packet, encrypted)
         except Exception as e:
             event_queue.put({"type": "error", "message": str(e)})
 
@@ -135,6 +159,22 @@ def get_status():
     })
 
 
+def _save_attack_log_sync(fake_seed, fake_response, real_response, detected):
+    from api.infrastructure.db.config import SyncSessionLocal
+    from api.domain.entities import AttackLog
+
+    with SyncSessionLocal() as session:
+        from api.infrastructure.db.models import AttackLogModel
+        log = AttackLogModel(
+            fake_seed=fake_seed,
+            fake_response=fake_response,
+            real_response=real_response,
+            detected=detected,
+        )
+        session.add(log)
+        session.commit()
+
+
 @app.route("/api/attack/<int:fake_seed>")
 def trigger_attack(fake_seed):
     challenge = puf.generate_challenge()
@@ -147,6 +187,10 @@ def trigger_attack(fake_seed):
 
     drone_status.attack_detected = detected
     event_queue.put({"type": "attack", "seed": fake_seed, "detected": detected})
+    try:
+        _save_attack_log_sync(fake_seed, fake_response, real_response, detected)
+    except Exception as e:
+        print(f"Warning: could not save attack log to DB: {e}")
     return jsonify({
         "attack_simulated": True,
         "fake_seed": fake_seed,
