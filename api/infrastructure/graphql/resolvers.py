@@ -4,7 +4,7 @@ from typing import List, Optional
 from strawberry.types import Info
 
 from ...domain.entities import (
-    TelemetryPacket, DroneIdentity, ChallengeResponsePair,
+    TelemetryPacket, DroneIdentity, ChallengeResponsePair, DroneStatus,
 )
 from ...domain.services import DroneAuthService, TelemetryService, AttackDetectionService
 from ...application.use_cases import (
@@ -27,6 +27,7 @@ class ResolverContext:
     def __init__(self):
         self.puf = HybridPUFAdapter()
         self._deps = None
+        self.drone_status = DroneStatus()
 
     @property
     def deps(self):
@@ -123,15 +124,18 @@ async def resolve_get_telemetry(drone_id: str, limit: int = 50) -> List[Telemetr
 
 
 def resolve_drone_status() -> DroneStatusType:
+    s = ctx.drone_status
     return DroneStatusType(
-        authenticated=True,
-        altitude=100.0,
-        speed=15.0,
-        battery=100.0,
-        heading=0.0,
-        gps_lat=-16.4090,
-        gps_lon=-71.5374,
-        signal_strength=85,
-        packets_sent=0,
-        attack_detected=False,
+        authenticated=s.authenticated,
+        altitude=s.altitude,
+        speed=s.speed,
+        battery=s.battery,
+        heading=s.heading,
+        gps_lat=s.gps_lat,
+        gps_lon=s.gps_lon,
+        signal_strength=s.signal_strength,
+        packets_sent=s.packets_sent,
+        attack_detected=s.attack_detected,
+        challenge=s.challenge,
+        response=s.response,
     )

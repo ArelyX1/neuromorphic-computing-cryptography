@@ -19,12 +19,13 @@ export default function App() {
     authenticated: false, gps_lat: -16.409, gps_lon: -71.537,
     altitude: 100, speed: 15, battery: 100, heading: 0,
     signal_strength: 70, packets_sent: 0, challenge: '', response: '',
-    attack_detected: false, spike_levels: [0.2,0.5,0.3,0.8,0.1],
-    conductance_mean: 0.5, conductance_std: 0.15
+    attack_detected: false, spike_levels: [0.5,0.5,0.5,0.5,0.5],
+    conductance_mean: 0.5, conductance_std: 0.15,
+    membrane_levels: [0.5,0.5,0.5,0.5], stdp_lr: 0.005, t_window: 10
   });
   const [crypto, setCrypto] = useState({
     ciphertext: '', iv: '', nonce_ctr: '', iv_cbc: '',
-    chacha_iv: '', drone_id: '', size: 0
+    chacha_iv: '', drone_id: '', size: 0, spike_permutation: ''
   });
   const [attackResult, setAttackResult] = useState(null);
   const [attackCount, setAttackCount] = useState(0);
@@ -51,10 +52,11 @@ export default function App() {
   const handleEvent = useCallback((msg) => {
     if (msg.type === 'status') {
       setStatus(msg.data);
+      if (msg.data.crypto) {
+        setCrypto(msg.data.crypto);
+        addLog('INFO', 'CIPHER', `AES-CBC+AES-CTR+Spike+ChaCha20 — ${msg.data.crypto.size || 0} B`);
+      }
       if (msg.data.authenticated) setPackets(p => msg.data.packets_sent || p);
-    } else if (msg.type === 'telemetry') {
-      setCrypto(msg.packet);
-      addLog('INFO', 'CIPHER', `AES-CBC+AES-CTR+Spike+ChaCha20 — ${msg.packet.size || 0} B`);
     } else if (msg.type === 'auth') {
       if (msg.status === 'success') addLog('OK', 'AUTH', 'NeuroPUF authentication successful');
     } else if (msg.type === 'attack') {
@@ -202,19 +204,62 @@ function PUFCard({ status }) {
   const condMean = status.conductance_mean || 0.5;
   const condStd = status.conductance_std || 0.15;
   const bars = (status.spike_levels || []).map(v => Math.round(v * 100));
+  const matrix = status.conductance_matrix || null;
+  const r = status.response !== undefined && status.response !== null ? Number(status.response) : null;
+  const bits = r !== null ? r.toString(2).padStart(4, '0').split('').map(Number) : [0,0,0,0];
 
-  const crossbar = [];
-  for (let i = 0; i < 64; i++) {
-    const v = Math.max(0, Math.min(1, condMean + ((i % 8) - 3.5) * 0.04 + (Math.random() - 0.5) * condStd * 2));
-    crossbar.push(v);
-  }
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+
+    ctx.clearRect(0, 0, w, h);
+
+    if (matrix && matrix.length) {
+      const rows = matrix.length;
+      const cols = matrix[0].length;
+      const cw = w / cols, ch = h / rows;
+
+      let gmin = Infinity, gmax = -Infinity;
+      for (let i = 0; i < rows; i++)
+        for (let j = 0; j < cols; j++) {
+          const v = matrix[i][j];
+          if (v < gmin) gmin = v;
+          if (v > gmax) gmax = v;
+        }
+      const range = gmax - gmin || 1;
+
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          const norm = (matrix[i][j] - gmin) / range;
+          const red = Math.floor(20 + norm * 235);
+          const green = Math.floor(80 + norm * 175);
+          const blue = Math.floor(200 - norm * 55);
+          ctx.fillStyle = `rgb(${red},${green},${blue})`;
+          ctx.fillRect(j * cw, i * ch, Math.ceil(cw), Math.ceil(ch));
+        }
+      }
+
+      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i <= rows; i++) {
+        ctx.beginPath(); ctx.moveTo(0, i * ch); ctx.lineTo(w, i * ch); ctx.stroke();
+      }
+      for (let j = 0; j <= cols; j++) {
+        ctx.beginPath(); ctx.moveTo(j * cw, 0); ctx.lineTo(j * cw, h); ctx.stroke();
+      }
+    }
+  }, [matrix]);
 
   return (
     <div className="card">
       <div className="card-h">NEUROMORPHIC PUF CORE</div>
       <div className="card-b">
-        <div style={{ display: 'flex', gap: 12, marginBottom: 12, alignItems: 'center' }}>
-          <div style={{ flex: 1, textAlign: 'center' }}>
+        <div style={{ display: 'flex', gap: 12, marginBottom: 14, alignItems: 'center' }}>
+          <div style={{ flex: '0.7', textAlign: 'center' }}>
             <div className="t-lbl">Spike Encoder</div>
             <div className="puf-bars">
               {bars.map((h,i) => <div key={i} style={{ height: h + '%' }} />)}
@@ -222,25 +267,54 @@ function PUFCard({ status }) {
             <div className="t-lbl" style={{ marginTop: 4 }}>challenge</div>
             <div className="puf-val">{(status.challenge || '').substring(0, 16) || '--'}</div>
           </div>
-          <div style={{ flex: 1, textAlign: 'center' }}>
-            <div className="t-lbl">&mu; = {condMean.toFixed(4)} &sigma; = {condStd.toFixed(4)}</div>
-            <div className="crossbar">
-              {crossbar.map((v, i) => {
-                const r = Math.floor(20 + v * 70);
-                const g = Math.floor(60 + v * 120);
-                const b = Math.floor(100 + v * 155);
-                return <div key={i} style={{ background: `rgb(${r},${g},${b})` }} />;
-              })}
+          <div className="puf-arrow">&rarr;</div>
+          <div style={{ flex: '1', textAlign: 'center' }}>
+            <div className="t-lbl">4 &times; LIF Neurons</div>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 10, margin: '8px 0' }}>
+              {bits.map((bit, i) => (
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                  <div style={{
+                    width: 14, height: 14, borderRadius: '50%',
+                    background: bit ? '#00c853' : '#1a2a40',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: bit ? '0 0 8px rgba(0,200,83,0.6)' : 'none',
+                    transition: 'background 0.3s, box-shadow 0.3s'
+                  }} />
+                  <span style={{ fontSize: 9, color: 'var(--text-secondary)', fontFamily: "'JetBrains Mono',monospace" }}>{bit}</span>
+                </div>
+              ))}
             </div>
-            <div className="t-lbl" style={{ marginTop: 2 }}>memristor 8x8</div>
           </div>
-          <div style={{ flex: 1, textAlign: 'center' }}>
-            <div className="t-lbl">LIF Decision</div>
-            <svg viewBox="0 0 40 40" width="36" height="36" style={{ display: 'block', margin: '4px auto' }}>
-              <circle cx="20" cy="20" r="16" fill="none" stroke="#00c853" strokeWidth="1.5" opacity="0.35" />
-              <circle cx="20" cy="20" r="3" fill={condMean > 0.5 ? '#00c853' : '#1a2a40'} />
-            </svg>
-            <div className="puf-val">{status.response || '--'}</div>
+          <div className="puf-arrow">&rarr;</div>
+          <div style={{ flex: '0.7', textAlign: 'center' }}>
+            <div className="t-lbl">PUF Response</div>
+            <div className="puf-val" style={{ fontSize: 16 }}>{r !== null ? r : '--'}</div>
+            <div className="t-lbl" style={{ marginTop: 2 }}>{r !== null ? bits.join('') : '----'}</div>
+          </div>
+        </div>
+        <div style={{ width: '100%', marginBottom: 10 }}>
+          <canvas ref={canvasRef} width="640" height="80"
+            style={{ width: '100%', height: 'auto', border: '1px solid rgba(123,47,247,0.2)', borderRadius: 4, display: 'block' }} />
+        </div>
+        <div className="puf-stats">
+          <div className="puf-stat">
+            <span className="stat-label">Conductance &mu;</span>
+            <span className="stat-value">{condMean.toFixed(3)}</span>
+            <span className="stat-unit">S</span>
+          </div>
+          <div className="puf-stat">
+            <span className="stat-label">&sigma; (deviation)</span>
+            <span className="stat-value">{condStd.toFixed(3)}</span>
+            <span className="stat-unit">S</span>
+          </div>
+          <div className="puf-stat">
+            <span className="stat-label">STDP rate</span>
+            <span className="stat-value">{status.stdp_lr !== undefined ? status.stdp_lr.toFixed(3) : '--'}</span>
+          </div>
+          <div className="puf-stat">
+            <span className="stat-label">Time window</span>
+            <span className="stat-value">{status.t_window !== undefined ? status.t_window : '--'}</span>
+            <span className="stat-unit">steps</span>
           </div>
         </div>
       </div>
@@ -267,7 +341,7 @@ function CryptoCard({ crypto }) {
       <div className="card-b">
         {step(0, 'AES-256-CBC', crypto.iv_cbc ? `IV ${crypto.iv_cbc.substring(0, 8)}...` : '--')}
         {step(1, 'AES-256-CTR', crypto.nonce_ctr ? `Nonce ${crypto.nonce_ctr.substring(0, 8)}...` : '--')}
-        {step(2, 'Spike Permutation', 'neural reorder')}
+        {step(2, 'Spike Permutation', crypto.spike_permutation || 'PUF')}
         {step(3, 'ChaCha20', crypto.chacha_iv ? `IV ${crypto.chacha_iv.substring(0, 8)}...` : '--')}
         {step(4, 'CIPHERTEXT', crypto.ciphertext ? crypto.ciphertext.substring(0, 16) + '...' : '---')}
         <div className="t-lbl" style={{ textAlign: 'center', marginTop: 8, padding: '4px 0' }}>
@@ -368,6 +442,7 @@ function AttackCard({ onAttack, onReset, result, count }) {
             {result.detected
               ? `DETECTED — seed=${result.fake_seed} fake_resp=${result.fake_response} real_resp=${result.real_response}`
               : `NOT DETECTED — seed=${result.fake_seed}`}
+            {result.challenge && <div className="t-lbl" style={{marginTop:4}}>challenge: {result.challenge}</div>}
           </div>
         )}
         {!result && (

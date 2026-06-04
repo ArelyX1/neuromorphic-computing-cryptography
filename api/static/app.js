@@ -61,6 +61,9 @@ let startTime = Date.now();
 })();
 
 /* ===== SSE ===== */
+let _pendingUpdate = null;
+let _animFrame = null;
+
 function connectSSE() {
   if (eventSource) eventSource.close();
   eventSource = new EventSource('/stream');
@@ -70,6 +73,7 @@ function connectSSE() {
     try {
       const msg = JSON.parse(e.data);
       if (msg.type === 'ping') return;
+      if (msg.type === 'status') { _pendingUpdate = msg.data; return; }
       handleEvent(msg);
     } catch (err) {}
   };
@@ -79,13 +83,29 @@ function connectSSE() {
   };
 }
 
+/* Batch all DOM updates into a single rAF frame */
+function _renderFrame() {
+  if (_pendingUpdate) {
+    const d = _pendingUpdate;
+    _pendingUpdate = null;
+    updateTelemetry(d);
+    if (d.crypto) {
+      updateCryptoPanel(d.crypto);
+      addLogEntry('--', 'ENCRYPT', 'Cifrado ' + (d.crypto.size || 0) + ' B');
+    }
+  }
+  _animFrame = requestAnimationFrame(_renderFrame);
+}
+_animFrame = requestAnimationFrame(_renderFrame);
+
 function handleEvent(msg) {
   switch (msg.type) {
     case 'status':
       updateTelemetry(msg.data);
-      break;
-    case 'telemetry':
-      updateCryptoPanel(msg.packet);
+      if (msg.data.crypto) {
+        updateCryptoPanel(msg.data.crypto);
+        addLogEntry('--', 'ENCRYPT', 'Cifrado ' + (msg.data.crypto.size || 0) + ' B');
+      }
       break;
     case 'auth':
       updateAuth(msg.status);
@@ -103,28 +123,30 @@ function handleEvent(msg) {
 function updateTelemetry(data) {
   packetsSent = data.packets_sent || 0;
 
-  document.getElementById('t-gps').textContent =
-    (data.gps_lat || 0).toFixed(6) + ', ' + (data.gps_lon || 0).toFixed(6);
-  document.getElementById('t-alt').innerHTML =
-    (data.altitude || 0).toFixed(1) + ' <span class="unit">m</span>';
-  document.getElementById('t-speed').innerHTML =
-    (data.speed || 0).toFixed(1) + ' <span class="unit">m/s</span>';
-  document.getElementById('t-heading').innerHTML =
-    (data.heading || 0).toFixed(0) + '&deg;';
+  const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  const setHTML = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
+
+  setText('t-gps', (data.gps_lat || 0).toFixed(6) + ', ' + (data.gps_lon || 0).toFixed(6));
+  setHTML('t-alt', (data.altitude || 0).toFixed(1) + ' <span class="unit">m</span>');
+  setHTML('t-speed', (data.speed || 0).toFixed(1) + ' <span class="unit">m/s</span>');
+  setHTML('t-heading', (data.heading || 0).toFixed(0) + '&deg;');
 
   const bat = Math.max(0, data.battery || 0);
   const fill = document.getElementById('battery-fill');
-  fill.style.width = bat + '%';
-  document.getElementById('battery-text').textContent = bat.toFixed(0) + '%';
-
-  if (bat < 20) fill.style.background = 'linear-gradient(90deg, #ff1744, #ff5252)';
-  else if (bat < 50) fill.style.background = 'linear-gradient(90deg, #ff9100, #ffab40)';
-  else fill.style.background = 'linear-gradient(90deg, #00c853, #69f0ae)';
+  if (fill) {
+    fill.style.width = bat + '%';
+    fill.style.background = bat < 20
+      ? 'linear-gradient(90deg, #ff1744, #ff5252)'
+      : bat < 50
+        ? 'linear-gradient(90deg, #ff9100, #ffab40)'
+        : 'linear-gradient(90deg, #00c853, #69f0ae)';
+  }
+  setText('battery-text', bat.toFixed(0) + '%');
 
   const sig = Math.min(100, Math.max(0, data.signal_strength || 50));
-  const bars = document.querySelectorAll('.signal-bars span');
+  const sigBars = document.querySelectorAll('.signal-bars span');
   const activeBars = Math.ceil(sig / 20);
-  bars.forEach((bar, i) => {
+  sigBars.forEach((bar, i) => {
     const h = parseInt(bar.dataset.h);
     bar.style.height = (i < activeBars ? h : 2) + 'px';
     bar.style.background = i < activeBars
@@ -132,41 +154,36 @@ function updateTelemetry(data) {
       : 'rgba(255,255,255,0.06)';
   });
 
-  document.getElementById('t-status').textContent =
-    bat > 20 ? 'EN RUTA' : 'REGRESANDO';
-  document.getElementById('t-status').style.color =
-    bat > 20 ? '#69f0ae' : '#ff9100';
+  setText('t-status', bat > 20 ? 'EN RUTA' : 'REGRESANDO');
+  const statusEl = document.getElementById('t-status');
+  if (statusEl) statusEl.style.color = bat > 20 ? '#69f0ae' : '#ff9100';
 
-  /* Dashboard summary */
-  document.getElementById('s-packets').textContent = packetsSent;
-  document.getElementById('s-battery').textContent = bat.toFixed(0) + '%';
+  setText('s-packets', packetsSent);
+  setText('s-battery', bat.toFixed(0) + '%');
 
   const elapsed = Math.floor((Date.now() - startTime) / 1000);
   const mins = Math.floor(elapsed / 60);
   const secs = elapsed % 60;
-  document.getElementById('s-age').textContent = mins + 'm ' + secs + 's';
-
-  if (elapsed > 0) {
-    const tps = (packetsSent / elapsed).toFixed(1);
-    document.getElementById('s-throughput').textContent = tps + '/s';
-  }
+  setText('s-age', mins + 'm ' + secs + 's');
+  if (elapsed > 0) setText('s-throughput', (packetsSent / elapsed).toFixed(1) + '/s');
 
   /* Auth badge */
   const authBadge = document.getElementById('auth-badge');
-  if (data.authenticated) {
-    authBadge.textContent = 'AUTH OK';
-    authBadge.className = 'badge badge-success';
-  } else {
-    authBadge.textContent = 'NO AUTH';
-    authBadge.className = 'badge badge-danger';
+  if (authBadge) {
+    if (data.authenticated) {
+      authBadge.textContent = 'AUTH OK';
+      authBadge.className = 'badge badge-success';
+    } else {
+      authBadge.textContent = 'NO AUTH';
+      authBadge.className = 'badge badge-danger';
+    }
   }
 
   /* PUF signals */
   if (data.challenge) {
     const bits = data.challenge.substring(0, 5);
-    document.getElementById('puf-challenge').textContent = bits.length >= 5 ? bits + '...' : bits;
+    setText('puf-challenge', bits.length >= 5 ? bits + '...' : bits);
 
-    /* Spike bars */
     const spikeBars = document.querySelectorAll('.puf-voltage-bars div');
     if (data.spike_levels) {
       spikeBars.forEach((bar, i) => {
@@ -176,82 +193,113 @@ function updateTelemetry(data) {
       });
     }
   }
+  /* STDP params from server */
+  if (data.stdp_lr !== undefined) setText('puf-stdp-lr', data.stdp_lr.toFixed(3));
+  if (data.t_window !== undefined) setText('puf-t-window', data.t_window);
+
+  /* Membrane levels for LIF neurons */
+  if (data.membrane_levels) {
+    for (let i = 0; i < 4 && i < data.membrane_levels.length; i++) {
+      const memBar = document.getElementById('lif-mem-' + i);
+      if (memBar) memBar.style.height = (data.membrane_levels[i] * 100) + '%';
+    }
+  }
+
   if (data.response !== undefined) {
-    document.getElementById('puf-response').textContent =
-      (data.response === 1 ? '+1' : '-1') + ' / ' + (data.response === 1 ? '-1' : '+1');
+    const r = Number(data.response);
+    const bits = r.toString(2).padStart(4, '0');
+    setText('puf-response', r);
+    setText('puf-response-binary', bits);
+
+    for (let i = 0; i < 4; i++) {
+      const bitVal = (r >> (3 - i)) & 1;
+      const dot = document.getElementById('lif-dot-' + i);
+      const label = document.getElementById('lif-bit-' + i);
+      if (dot) dot.className = 'lif-dot' + (bitVal ? ' active' : '');
+      if (label) label.textContent = bitVal;
+    }
   }
 
   /* Crossbar viz */
-  if (data.conductance_mean !== undefined) {
-    document.getElementById('puf-cond-mean').textContent =
-      data.conductance_mean.toFixed(3);
-    drawCrossbar(data.conductance_mean, data.conductance_std || 0.15);
+  if (data.conductance_matrix) {
+    setText('puf-cond-mean', (data.conductance_mean || 0).toFixed(3));
+    setText('puf-cond-std', (data.conductance_std || 0).toFixed(3));
+    drawCrossbar(data.conductance_matrix, data.response);
+
+    /* Feed real conductance mean to chart */
+    if (window.__neuroChartFeed && data.conductance_mean !== undefined) {
+      window.__neuroChartFeed(data.conductance_mean);
+    }
   }
 
   /* Map */
   updateMap(data.gps_lat, data.gps_lon);
-
-  /* Map coords */
-  document.getElementById('map-coords').textContent =
-    (data.gps_lat || 0).toFixed(6) + ', ' + (data.gps_lon || 0).toFixed(6);
+  setText('map-coords', (data.gps_lat || 0).toFixed(6) + ', ' + (data.gps_lon || 0).toFixed(6));
 
   /* Attack card glow */
-  document.getElementById('attack-card').style.borderColor =
-    data.attack_detected ? 'rgba(255,23,68,0.4)' : 'rgba(255,255,255,0.06)';
+  const attackCard = document.getElementById('attack-card');
+  if (attackCard) {
+    attackCard.style.borderColor =
+      data.attack_detected ? 'rgba(255,23,68,0.4)' : 'rgba(255,255,255,0.06)';
+  }
 }
 
 /* ===== CROSSBAR VISUALIZATION ===== */
-function drawCrossbar(mean, std) {
+function drawCrossbar(matrix, response) {
   const canvas = document.getElementById('crossbar-canvas');
-  if (!canvas) return;
+  if (!canvas || !matrix || !matrix.length) return;
   const ctx = canvas.getContext('2d');
   const w = canvas.width, h = canvas.height;
-  const row = 4, col = 8;
-  const cw = w / col, ch = h / row;
+  const rows = matrix.length;
+  const cols = matrix[0].length;
+  const cw = w / cols, ch = h / rows;
 
   ctx.clearRect(0, 0, w, h);
 
-  for (let i = 0; i < row; i++) {
-    for (let j = 0; j < col; j++) {
-      const val = Math.max(0, Math.min(1, mean + (Math.random() - 0.5) * std * 2));
-      const r = Math.floor(20 + val * 60);
-      const g = Math.floor(100 + val * 80);
-      const b = Math.floor(200 - val * 100);
+  let gmin = Infinity, gmax = -Infinity;
+  for (let i = 0; i < rows; i++)
+    for (let j = 0; j < cols; j++) {
+      const v = matrix[i][j];
+      if (v < gmin) gmin = v;
+      if (v > gmax) gmax = v;
+    }
+  const range = gmax - gmin || 1;
+
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+      const norm = (matrix[i][j] - gmin) / range;
+      const r = Math.floor(20 + norm * 235);
+      const g = Math.floor(80 + norm * 175);
+      const b = Math.floor(200 - norm * 55);
       ctx.fillStyle = `rgb(${r},${g},${b})`;
-      ctx.fillRect(j * cw + 1, i * ch + 1, cw - 2, ch - 2);
-      ctx.fillStyle = 'rgba(255,255,255,0.08)';
-      ctx.fillRect(j * cw, i * ch, 1, ch);
-      ctx.fillRect(j * cw, i * ch, cw, 1);
+      ctx.fillRect(j * cw, i * ch, Math.ceil(cw), Math.ceil(ch));
     }
   }
 
-  /* LIF neuron firing effect */
-  const neuronDot = document.getElementById('neuron-dot');
-  if (neuronDot) {
-    const active = mean > 0.5;
-    neuronDot.setAttribute('fill', active ? '#00c853' : '#1a2a40');
-    if (active) {
-      neuronDot.parentElement.parentElement.style.filter =
-        'drop-shadow(0 0 6px rgba(0,200,83,0.5))';
-    } else {
-      neuronDot.parentElement.parentElement.style.filter = 'none';
-    }
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= rows; i++) {
+    ctx.beginPath(); ctx.moveTo(0, i * ch); ctx.lineTo(w, i * ch); ctx.stroke();
+  }
+  for (let j = 0; j <= cols; j++) {
+    ctx.beginPath(); ctx.moveTo(j * cw, 0); ctx.lineTo(j * cw, h); ctx.stroke();
   }
 }
 
 /* ===== CRYPTO PANEL ===== */
 function updateCryptoPanel(packet) {
   if (!packet) return;
-  document.getElementById('c-caesar').textContent = 'Shift: ' + (packet.shift || '--');
-  document.getElementById('c-vigenere').textContent = 'Key: ' + (packet.vigenere_key || '--');
-  document.getElementById('c-spike').textContent = 'Pattern: NEURO-' + (packet.shift || '?');
-  document.getElementById('c-chacha').textContent = 'IV: ' + (packet.iv ? packet.iv.substring(0, 10) + '...' : '--');
+  const s = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  s('c-cbc', 'IV: ' + (packet.iv_cbc ? packet.iv_cbc.substring(0, 10) + '...' : '--'));
+  s('c-ctr', 'Nonce: ' + (packet.nonce_ctr ? packet.nonce_ctr.substring(0, 10) + '...' : '--'));
+  s('c-spike', 'Patr\u00f3n: ' + (packet.spike_permutation || 'PUF'));
+  s('c-chacha', 'IV: ' + (packet.chacha_iv ? packet.chacha_iv.substring(0, 10) + '...' : '--'));
 
   const ct = packet.ciphertext || '';
   const display = ct.substring(0, 28);
-  document.getElementById('c-result').textContent = display ? display + '...' : '---';
-  document.getElementById('crypto-size').textContent =
-    'Tamaño cifrado: ' + (packet.size || Math.ceil((ct.length || 0) / 2)) + ' bytes';
+  s('c-result', display ? display + '...' : '---');
+  const sz = document.getElementById('crypto-size');
+  if (sz) sz.textContent = 'Tama\u00f1o cifrado: ' + (packet.size || Math.ceil((ct.length || 0) / 2)) + ' bytes';
 }
 
 /* ===== AUTH ===== */
@@ -284,15 +332,23 @@ function addLogEntry(step, action, detail, color) {
 }
 
 /* ===== MAP ===== */
+let _mapW = 0, _mapH = 0;
+function _resizeMap(canvas) {
+  const pw = canvas.parentElement.clientWidth;
+  const ph = canvas.parentElement.clientHeight;
+  if (pw !== _mapW || ph !== _mapH) {
+    _mapW = canvas.width = pw || 400;
+    _mapH = canvas.height = ph || 280;
+  }
+}
+
 function updateMap(lat, lon) {
   const canvas = document.getElementById('map-canvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  const rect = canvas.parentElement.getBoundingClientRect();
-  canvas.width = canvas.clientWidth || rect.width || 400;
-  canvas.height = canvas.clientHeight || rect.height || 280;
+  _resizeMap(canvas);
 
-  const w = canvas.width, h = canvas.height;
+  const w = _mapW, h = _mapH;
   const centerLat = -16.409, centerLon = -71.537;
   const scale = 8000;
   const x = w / 2 + (lon - centerLon) * scale;
@@ -383,9 +439,10 @@ function updateMap(lat, lon) {
   };
 
   function draw() {
-    const rect = canvas.parentElement.getBoundingClientRect();
-    canvas.width = canvas.clientWidth || rect.width || 400;
-    canvas.height = canvas.clientHeight || rect.height || 180;
+    const pw = canvas.parentElement.clientWidth;
+    const ph = canvas.parentElement.clientHeight;
+    canvas.width = pw || 400;
+    canvas.height = ph || 180;
     const w = canvas.width, h = canvas.height;
 
     ctx.clearRect(0, 0, w, h);
@@ -461,11 +518,13 @@ function simulateAttack(seed) {
         resultEl.innerHTML =
           '&#9989; ATAQUE DETECTADO: Dron falso (seed=' + data.fake_seed +
           ') respondi&oacute; ' + data.fake_response + ' vs esperado ' + data.real_response;
+        if (data.challenge) resultEl.innerHTML += ' <span class="unit">challenge: ' + data.challenge + '</span>';
         addLogEntry('!!', 'ATTACK', 'Falso drone detectado (seed=' + seed + ')', '#ff1744');
       } else {
         resultEl.className = 'attack-result danger';
         resultEl.style.display = 'block';
         resultEl.innerHTML = '&#9888; ATAQUE NO DETECTADO (coincidencia fortuita)';
+        if (data.challenge) resultEl.innerHTML += ' <span class="unit">challenge: ' + data.challenge + '</span>';
         addLogEntry('?!', 'ATTACK', 'Falso drone NO detectado (seed=' + seed + ')', '#ff9100');
       }
       attackHistory.push(data);
@@ -503,8 +562,5 @@ function resetDrone() {
 connectSSE();
 
 window.addEventListener('resize', function() {
-  const mc = document.getElementById('map-canvas');
-  if (mc) { mc.width = mc.clientWidth; mc.height = mc.clientHeight; }
-  const cc = document.getElementById('chart-canvas');
-  if (cc) { cc.width = cc.clientWidth; cc.height = cc.clientHeight; }
+  _mapW = 0; _mapH = 0;
 });

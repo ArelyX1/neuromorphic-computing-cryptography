@@ -14,7 +14,13 @@ if ASYNC_DATABASE_URL and not ASYNC_DATABASE_URL.startswith("postgresql+asyncpg:
 
 SYNC_DATABASE_URL = ASYNC_DATABASE_URL.replace("+asyncpg", "", 1)
 
-async_engine = create_async_engine(ASYNC_DATABASE_URL, echo=False)
+async_engine = create_async_engine(
+    ASYNC_DATABASE_URL,
+    echo=False,
+    pool_size=20,
+    max_overflow=10,
+    pool_pre_ping=True,
+)
 AsyncSessionLocal = async_sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
 
 sync_engine = create_engine(SYNC_DATABASE_URL, echo=False)

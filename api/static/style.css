@@ -373,15 +373,59 @@ h1 {
   opacity: 0.6;
 }
 
+/* ===== LIF NEURONS ===== */
+.lif-neurons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 6px 0;
+}
+
+.lif-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.lif-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #1a2a40;
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+
+.lif-dot.active {
+  background: #00c853;
+  box-shadow: 0 0 8px rgba(0,200,83,0.6);
+}
+
+.lif-bit {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--text-secondary);
+}
+
+/* ===== CROSSBAR ===== */
+.crossbar-full {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.crossbar-full canvas {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  border: 1px solid rgba(123,47,247,0.2);
+  display: block;
+}
+
 .crossbar-viz {
   display: flex;
   justify-content: center;
   margin-bottom: 4px;
-}
-
-#crossbar-canvas {
-  border-radius: 4px;
-  border: 1px solid rgba(123,47,247,0.2);
 }
 
 .neuron-viz {
@@ -395,20 +439,47 @@ h1 {
 }
 
 .puf-stats {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  margin-top: 10px;
 }
 
 .puf-stat {
-  font-size: 10px;
   background: rgba(255,255,255,0.03);
-  padding: 4px 8px;
-  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 6px;
+  padding: 6px 8px;
+  text-align: center;
+  transition: border-color 0.3s;
 }
 
-.puf-stat span { color: var(--text-secondary); }
+.puf-stat:hover {
+  border-color: rgba(0,212,255,0.15);
+}
+
+.puf-stat .stat-label {
+  font-size: 8px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  letter-spacing: 0.6px;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.puf-stat .stat-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.puf-stat .stat-unit {
+  font-size: 8px;
+  color: var(--text-secondary);
+  font-weight: 400;
+  font-family: 'Inter', sans-serif;
+}
 
 /* ===== CRYPTO LAYERS ===== */
 .crypto-layers {
