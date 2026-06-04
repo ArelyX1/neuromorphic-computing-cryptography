@@ -154,3 +154,34 @@ h1 {
 }
 
 footer { margin-top:24px; padding:16px; text-align:center; font-size:10px; color:var(--text-secondary); border-top:1px solid rgba(255,255,255,0.03); }
+
+.puf-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin-top: 10px;
+}
+.puf-stat {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 6px;
+  padding: 6px 8px;
+  text-align: center;
+  transition: border-color 0.3s;
+}
+.puf-stat .stat-label {
+  font-size: 8px; text-transform: uppercase;
+  color: var(--text-secondary);
+  letter-spacing: 0.6px; display: block;
+  margin-bottom: 2px;
+}
+.puf-stat .stat-value {
+  font-size: 13px; font-weight: 700;
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+}
+.puf-stat .stat-unit {
+  font-size: 8px; color: var(--text-secondary);
+  font-weight: 400;
+  font-family: 'Inter', sans-serif;
+}

@@ -51,22 +51,22 @@ class HybridPUFAdapter(PUFPort):
                 preprocessor="vigenere",
                 preprocessor_key=f"PUFKEY_DERIV_{i}",
             )
-            cloned.crossbar.conductances = self.puf.crossbar.conductances.copy()
-            cloned.bias = self.puf.bias.copy()
+            cloned.crossbar.conductances = self.puf.crossbar.conductances.clone()
+            cloned.bias = self.puf.bias.clone()
             r = cloned.eval(c, noisy=True)
-            all_bits.append(r)
-        bits = np.array(all_bits, dtype=np.int8)
-        bits_01 = ((bits + 1) // 2).astype(np.uint8)
+            for b in range(4):
+                all_bits.append((r >> (3 - b)) & 1)
+        bits = np.array(all_bits, dtype=np.uint8)
         byte_list = []
-        for j in range(0, len(bits_01), 8):
-            chunk = bits_01[j:j+8]
+        for j in range(0, len(bits), 8):
+            chunk = bits[j:j+8]
             if len(chunk) < 8:
                 chunk = np.pad(chunk, (0, 8 - len(chunk)), constant_values=0)
             byte_val = sum(int(b) << (7 - bi) for bi, b in enumerate(chunk))
             byte_list.append(byte_val)
         return hashlib.sha256(bytes(byte_list)).digest()
 
-    def _derive_key(self, challenge: list, length: int = 32, salt: str = "") -> bytes:
+    def _derive_key(self, challenge: list, length: int = 16, salt: str = "") -> bytes:
         raw = self._puf_bit_sequence(challenge, length * 8)
         if salt:
             raw = hashlib.sha256(raw + salt.encode()).digest()
@@ -75,7 +75,12 @@ class HybridPUFAdapter(PUFPort):
     def encrypt(self, plaintext: bytes, challenge: list) -> EncryptedPayload:
         c = np.array(challenge, dtype=np.int8)
 
-        key_cbc = self._derive_key(challenge, 32, salt="AES-CBC")
+        # Single PUF key derivation → derive per-cipher keys via SHA-256
+        master = self._derive_key(challenge, 32, salt="NEURO-PUF-MASTER")
+        key_cbc = hashlib.sha256(master + b"AES-CBC").digest()[:16]
+        key_ctr = hashlib.sha256(master + b"AES-CTR").digest()[:16]
+        key_chacha = hashlib.sha256(master + b"ChaCha20-Final").digest()[:32]
+
         iv_cbc = os.urandom(16)
         padder = padding.PKCS7(128).padder()
         padded = padder.update(plaintext) + padder.finalize()
@@ -83,7 +88,6 @@ class HybridPUFAdapter(PUFPort):
         enc_cbc = cipher_cbc.encryptor()
         layer1 = enc_cbc.update(padded) + enc_cbc.finalize()
 
-        key_ctr = self._derive_key(challenge, 32, salt="AES-CTR")
         nonce_ctr = os.urandom(16)
         cipher_ctr = Cipher(algorithms.AES(key_ctr), modes.CTR(nonce_ctr))
         enc_ctr = cipher_ctr.encryptor()
@@ -97,7 +101,6 @@ class HybridPUFAdapter(PUFPort):
             layer3.append(perm)
         layer3 = bytes(layer3)
 
-        key_chacha = self._derive_key(challenge, 32, salt="ChaCha20-Final")
         chacha_iv = os.urandom(16)
         cipher_chacha = Cipher(algorithms.ChaCha20(key_chacha[:32], chacha_iv), mode=None)
         enc_chacha = cipher_chacha.encryptor()
@@ -117,7 +120,8 @@ class HybridPUFAdapter(PUFPort):
     def decrypt(self, encrypted: EncryptedPayload) -> bytes:
         c = np.array(encrypted.challenge, dtype=np.int8)
 
-        key_chacha = self._derive_key(encrypted.challenge, 32, salt="ChaCha20-Final")
+        master = self._derive_key(encrypted.challenge, 32, salt="NEURO-PUF-MASTER")
+        key_chacha = hashlib.sha256(master + b"ChaCha20-Final").digest()[:32]
         chacha_iv = bytes.fromhex(encrypted.chacha_iv)
         cipher_chacha = Cipher(algorithms.ChaCha20(key_chacha[:32], chacha_iv), mode=None)
         dec_chacha = cipher_chacha.decryptor()
@@ -131,13 +135,13 @@ class HybridPUFAdapter(PUFPort):
             layer2.append(perm)
         layer2 = bytes(layer2)
 
-        key_ctr = self._derive_key(encrypted.challenge, 32, salt="AES-CTR")
+        key_ctr = hashlib.sha256(master + b"AES-CTR").digest()[:16]
         nonce_ctr = bytes.fromhex(encrypted.nonce_ctr)
         cipher_ctr = Cipher(algorithms.AES(key_ctr), modes.CTR(nonce_ctr))
         dec_ctr = cipher_ctr.decryptor()
         layer1 = dec_ctr.update(layer2) + dec_ctr.finalize()
 
-        key_cbc = self._derive_key(encrypted.challenge, 32, salt="AES-CBC")
+        key_cbc = hashlib.sha256(master + b"AES-CBC").digest()[:16]
         iv_cbc = bytes.fromhex(encrypted.iv_cbc)
         cipher_cbc = Cipher(algorithms.AES(key_cbc), modes.CBC(iv_cbc))
         dec_cbc = cipher_cbc.decryptor()

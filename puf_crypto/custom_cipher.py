@@ -3,7 +3,7 @@ import hashlib
 import numpy as np
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding
-from .simulation.hybrid_puf import NeuromorphicHybridPUF, HybridPUF
+from .simulation.hybrid_puf import HybridPUF
 
 
 class PUFKeyDerivation:
@@ -24,15 +24,15 @@ class PUFKeyDerivation:
                 preprocessor="vigenere",
                 preprocessor_key=f"PUFKEY_DERIV_{i}"
             )
-            cloned.crossbar.conductances = self.puf.crossbar.conductances.copy()
-            cloned.bias = self.puf.bias.copy()
+            cloned.crossbar.conductances = self.puf.crossbar.conductances.clone()
+            cloned.bias = self.puf.bias.clone()
             r = cloned.eval(challenge, noisy=True)
-            all_bits.append(r)
-        bits = np.array(all_bits, dtype=np.int8)
-        bits_01 = ((bits + 1) // 2).astype(np.uint8)
+            for b in range(4):
+                all_bits.append((r >> (3 - b)) & 1)
+        bits = np.array(all_bits, dtype=np.uint8)
         byte_list = []
-        for j in range(0, len(bits_01), 8):
-            chunk = bits_01[j:j+8]
+        for j in range(0, len(bits), 8):
+            chunk = bits[j:j+8]
             if len(chunk) < 8:
                 chunk = np.pad(chunk, (0, 8 - len(chunk)), constant_values=0)
             byte_val = sum(int(b) << (7 - bi) for bi, b in enumerate(chunk))
@@ -50,22 +50,6 @@ class PUFCipher:
     def __init__(self, puf: HybridPUF):
         self.puf = puf
         self.kdf = PUFKeyDerivation(puf)
-
-    @staticmethod
-    def _caesar_encrypt(data: bytes, shift: int) -> bytes:
-        return bytes((b + shift) % 256 for b in data)
-
-    @staticmethod
-    def _caesar_decrypt(data: bytes, shift: int) -> bytes:
-        return bytes((b - shift) % 256 for b in data)
-
-    @staticmethod
-    def _vigenere_encrypt(data: bytes, key: str) -> bytes:
-        return bytes((b + ord(key[i % len(key)])) % 256 for i, b in enumerate(data))
-
-    @staticmethod
-    def _vigenere_decrypt(data: bytes, key: str) -> bytes:
-        return bytes((b - ord(key[i % len(key)])) % 256 for i, b in enumerate(data))
 
     def _aes_cbc_encrypt(self, data: bytes, challenge: np.ndarray) -> tuple[bytes, bytes]:
         key = self.kdf.derive_key(challenge, 32, salt="AES-CBC")

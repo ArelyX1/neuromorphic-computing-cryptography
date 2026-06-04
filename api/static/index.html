@@ -133,7 +133,7 @@
       </div>
       <div class="card-body">
         <div class="puf-diagram">
-          <div class="puf-box puf-input">
+          <div class="puf-box puf-input" style="flex:0.7">
             <div class="puf-label">Spike Encoding</div>
             <div class="puf-voltage-bars" id="puf-spikes">
               <div style="height:20%"></div><div style="height:60%"></div><div style="height:40%"></div><div style="height:90%"></div><div style="height:10%"></div>
@@ -141,31 +141,43 @@
             <div class="puf-bits" id="puf-challenge">00000</div>
           </div>
           <div class="puf-arrow">&rarr;</div>
-          <div class="puf-box puf-core">
-            <div class="puf-label">Memristor Crossbar</div>
-            <div class="crossbar-viz" id="crossbar-viz">
-              <canvas id="crossbar-canvas" width="80" height="80"></canvas>
+          <div class="puf-box puf-core" style="flex:1">
+            <div class="puf-label">4 &times; LIF Neuronas</div>
+            <div class="lif-neurons" id="lif-neurons">
+              <div class="lif-group">
+                <div class="lif-dot" id="lif-dot-0"></div>
+                <div class="lif-bit" id="lif-bit-0">0</div>
+              </div>
+              <div class="lif-group">
+                <div class="lif-dot" id="lif-dot-1"></div>
+                <div class="lif-bit" id="lif-bit-1">0</div>
+              </div>
+              <div class="lif-group">
+                <div class="lif-dot" id="lif-dot-2"></div>
+                <div class="lif-bit" id="lif-bit-2">0</div>
+              </div>
+              <div class="lif-group">
+                <div class="lif-dot" id="lif-dot-3"></div>
+                <div class="lif-bit" id="lif-bit-3">0</div>
+              </div>
             </div>
-            <div class="puf-sub">STDP &middot; Conductancias</div>
           </div>
           <div class="puf-arrow">&rarr;</div>
-          <div class="puf-box puf-output">
-            <div class="puf-label">LIF Decisi&oacute;n</div>
-            <div id="puf-neuron-viz" class="neuron-viz">
-              <svg viewBox="0 0 40 40" width="36" height="36">
-                <circle cx="20" cy="20" r="16" fill="none" stroke="#00c853" stroke-width="1.5" opacity="0.4"/>
-                <circle cx="20" cy="20" r="8" fill="none" stroke="#00c853" stroke-width="1" opacity="0.6"/>
-                <circle cx="20" cy="20" r="3" id="neuron-dot" fill="#00c853"/>
-              </svg>
-            </div>
-            <div class="puf-bits" id="puf-response">-1 / +1</div>
+          <div class="puf-box puf-output" style="flex:0.7">
+            <div class="puf-label">Respuesta PUF</div>
+            <div class="puf-bits" id="puf-response">--</div>
+            <div class="puf-sub" id="puf-response-binary">----</div>
           </div>
         </div>
+        <div class="crossbar-full">
+          <canvas id="crossbar-canvas" width="640" height="80"></canvas>
+        </div>
         <div class="puf-stats">
-          <div class="puf-stat"><span>Conductancia &mu;:</span> <strong id="puf-cond-mean">0.50</strong></div>
-          <div class="puf-stat"><span>STDP lr:</span> <strong>0.005</strong></div>
-          <div class="puf-stat"><span>t_window:</span> <strong>10</strong></div>
-          <div class="puf-stat"><span>CRPs generados:</span> <strong id="puf-crp-count">0</strong></div>
+          <div class="puf-stat"><span class="stat-label">Conductance &mu;</span><span class="stat-value" id="puf-cond-mean">--</span> <span class="stat-unit">S</span></div>
+          <div class="puf-stat"><span class="stat-label">&sigma; (deviation)</span><span class="stat-value" id="puf-cond-std">--</span> <span class="stat-unit">S</span></div>
+          <div class="puf-stat"><span class="stat-label">STDP rate</span><span class="stat-value" id="puf-stdp-lr">--</span></div>
+          <div class="puf-stat"><span class="stat-label">Time window</span><span class="stat-value" id="puf-t-window">--</span> <span class="stat-unit">steps</span></div>
+          <div class="puf-stat"><span class="stat-label">CRP count</span><span class="stat-value" id="puf-crp-count">0</span></div>
         </div>
       </div>
     </div>
@@ -179,16 +191,16 @@
           <div class="layer">
             <div class="layer-num">01</div>
             <div class="layer-info">
-              <div class="layer-name">Caesar Scramble</div>
-              <div class="layer-val" id="c-caesar">Shift: --</div>
+              <div class="layer-name">AES-256-CBC</div>
+              <div class="layer-val" id="c-cbc">IV: --</div>
             </div>
           </div>
           <div class="layer-arrow">&darr;</div>
           <div class="layer">
             <div class="layer-num">02</div>
             <div class="layer-info">
-              <div class="layer-name">Vigen&egrave;re Cipher</div>
-              <div class="layer-val" id="c-vigenere">Key: --</div>
+              <div class="layer-name">AES-256-CTR</div>
+              <div class="layer-val" id="c-ctr">Nonce: --</div>
             </div>
           </div>
           <div class="layer-arrow">&darr;</div>
@@ -196,7 +208,7 @@
             <div class="layer-num">03</div>
             <div class="layer-info">
               <div class="layer-name">Spike Permutation</div>
-              <div class="layer-val" id="c-spike">Pattern: --</div>
+              <div class="layer-val" id="c-spike">Patr&oacute;n: PUF</div>
             </div>
           </div>
           <div class="layer-arrow">&darr;</div>
